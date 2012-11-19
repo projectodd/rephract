@@ -35,19 +35,6 @@ public class Guards {
                 .printType()
                 .invokeStatic(lookup(), Guards.class, "receiverAndArgumentClassGuard");
     }
-    
-    public static MethodHandle getReceiverClassAndMethodNameGuard(Class<?> expectedReceiver, String expectedMethodName, MethodType type) throws NoSuchMethodException, IllegalAccessException {
-        return Binder.from(type.changeReturnType(boolean.class))
-                .printType()
-                .drop(2, type.parameterCount() - 2)
-                .convert(boolean.class, Object.class, String.class)
-                .printType()
-                .insert(2, expectedReceiver)
-                .insert(3, expectedMethodName)
-                .printType()
-                .invokeStatic(lookup(), Guards.class, "receiverClassAndMethodNameGuard");
-        
-    }
 
     public static boolean receiverClassGuard(Object receiver, Class<?> expected) {
         System.err.println("GUARD receiver: " + receiver);
@@ -59,7 +46,4 @@ public class Guards {
         return (expectedReceiver.isAssignableFrom(receiver.getClass()) && expectedArgument.isAssignableFrom(argument.getClass()));
     }
 
-    public static boolean receiverClassAndMethodNameGuard(Object receiver, String methodName, Class<?> expectedReceiver, String expectedMethodName) {
-        return ( expectedReceiver.isAssignableFrom( receiver.getClass() )&& methodName.equals(expectedMethodName ) );
-    }
 }

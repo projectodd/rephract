@@ -117,5 +117,51 @@ public class FusionLinkerTest {
         }
 
     }
+    
+    @Test
+    public void testLinkJavaBeans_getMethod_fixed() throws Throwable {
+
+        FusionLinker linker = new FusionLinker();
+        linker.addLinkStrategy(new JavaBeansLinkStrategy());
+
+        CallSite callSite = linker.bootstrap("fusion:getMethod:melt", Object.class, Object.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+        Person bob = new Person("bob", 39);
+
+        Object result = null;
+
+        result = callSite.getTarget().invoke(swiss);
+        assertThat(result).isInstanceOf(UnboundMethod.class);
+
+        try {
+            result = callSite.getTarget().invoke(bob);
+            throw new AssertionError("bob can't melt");
+        } catch (NoSuchMethodError e) {
+            // expected and correct
+        }
+
+    }
+    
+    @Test
+    public void testLinkJavaBeans_getMethod_call_dynamic() throws Throwable {
+
+        FusionLinker linker = new FusionLinker();
+        linker.addLinkStrategy(new JavaBeansLinkStrategy());
+
+        CallSite callSite = linker.bootstrap("fusion:getMethod", Object.class, Object.class, String.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+        Person bob = new Person("bob", 39);
+
+        Object result = null;
+
+        result = callSite.getTarget().invoke(swiss, "melt");
+        assertThat(result).isInstanceOf(UnboundMethod.class);
+        
+        CallSite callSite2 = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class );
+        
+        //callSite2.getTarget().invoke( result, swiss, new Object[]{} );
+    }
 
 }

@@ -7,6 +7,7 @@ import org.projectodd.linkfusion.LinkStrategy;
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
+import org.projectodd.linkfusion.strategy.javabeans.UnboundMethod;
 
 public class BaseLinkStrategy implements LinkStrategy {
 
@@ -28,6 +29,9 @@ public class BaseLinkStrategy implements LinkStrategy {
                     break;
                 case GET_METHOD:
                     link = linkGetMethod(chain, each);
+                    break;
+                case CALL:
+                    link = linkCall(chain, each);
                     break;
                 }
 
@@ -81,5 +85,14 @@ public class BaseLinkStrategy implements LinkStrategy {
 
     protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methName) {
         return chain.nextStrategy();
+    }
+    
+    protected StrategicLink linkCall(StrategyChain chain, Operation op) {
+        Object receiver = chain.getRequest().receiver();
+        if ( receiver instanceof UnboundMethod ) {
+           System.err.println( "args: " + chain.getRequest().argumentsList() );
+        }
+        return null;
+        
     }
 }

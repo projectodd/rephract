@@ -44,14 +44,14 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
         ClassManager classManager = getClassManager(receiver);
 
         MethodHandle writer = classManager.getPropertyWriter(propName, value.getClass());
-        
+
         if (writer == null) {
             return chain.nextStrategy();
         }
 
         try {
             MethodHandle bridge = Binder.from(chain.getRequest().type())
-                    .drop(1, chain.getRequest().type().parameterCount() - 2 )
+                    .drop(1, chain.getRequest().type().parameterCount() - 2)
                     .invoke(writer);
 
             return new StrategicLink(bridge, Guards.getReceiverAndArgumentClassGuard(receiver.getClass(), value.getClass(), chain.getRequest().type()));
@@ -61,7 +61,7 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
 
         return null;
     }
-    
+
     @Override
     protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName) {
         ClassManager classManager = getClassManager(receiver);
@@ -75,13 +75,13 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
         try {
             MethodHandle bridge = Binder.from(chain.getRequest().type())
                     .printType()
-                    .drop(0, chain.getRequest().type().parameterCount() )
+                    .drop(0, chain.getRequest().type().parameterCount())
                     .printType()
-                    .insert(0, method )
+                    .insert(0, method)
                     .printType()
                     .identity();
 
-            return new StrategicLink(bridge, Guards.getReceiverClassAndMethodNameGuard(receiver.getClass(), methodName, chain.getRequest().type()));
+            return new StrategicLink(bridge, Guards.getReceiverClassGuard(receiver.getClass(), chain.getRequest().type()));
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
