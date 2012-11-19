@@ -55,10 +55,10 @@ public class BaseLinkStrategy implements LinkStrategy {
         String propName = op.getParameter();
         Object value = null;
         if (propName == null) {
-            propName = chain.getRequest().arguments()[0].toString();
-            value = chain.getRequest().arguments()[1];
+            propName = chain.getRequest().arguments()[1].toString();
+            value = chain.getRequest().arguments()[2];
         } else {
-            value = chain.getRequest().arguments()[0];
+            value = chain.getRequest().arguments()[1];
         }
         return linkSetProperty(chain, receiver, propName, value);
     }

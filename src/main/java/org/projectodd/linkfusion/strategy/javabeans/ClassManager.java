@@ -5,7 +5,9 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class ClassManager {
@@ -13,6 +15,7 @@ public class ClassManager {
     private Class<?> target;
     
     private Map<String, MethodHandle> propertyReaders = new HashMap<>();
+    private Map<String, List<MethodHandle>> propertyWriters = new HashMap<>();
 
     public ClassManager(Class<?> target) {
         this.target = target;
@@ -35,6 +38,17 @@ public class ClassManager {
                     } catch (IllegalAccessException e) {
                         e.printStackTrace();
                     }
+                } else if ( name.startsWith( "set" ) && name.length() > 3 ) {
+                    List<MethodHandle> writers = this.propertyWriters.get( propertyName( name ) );
+                    if ( writers == null ) {
+                        writers = new ArrayList<>();
+                        this.propertyWriters.put( propertyName( name ), writers );
+                    }
+                    try {
+                        writers.add( lookup.unreflect(methods[i] ) );
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
@@ -47,6 +61,21 @@ public class ClassManager {
     
     public MethodHandle getPropertyReader(String propertyName) {
         return this.propertyReaders.get( propertyName );
+    }
+    
+    public MethodHandle getPropertyWriter(String propertyName, Class<?> valueClass) {
+        List<MethodHandle> writers = this.propertyWriters.get( propertyName );
+        System.err.println( "writers for " + propertyName + " // " + writers );
+        if ( writers == null ) {
+            return null;
+        }
+        
+        for ( MethodHandle each : writers ) {
+            if ( each.type().parameterCount() == 2 && each.type().parameterType(1).isAssignableFrom( valueClass ) ) {
+                return each;
+            }
+        }
+        return null;
     }
     
     public static String propertyName(String methodName) {

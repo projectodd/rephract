@@ -57,5 +57,41 @@ public class FusionLinkerTest {
         assertThat( result ).isEqualTo( "bob" );
     }
     
+    @Test
+    public void testLinkJavaBeans_setProperty_dynamic() throws Throwable {
+        
+        FusionLinker linker = new FusionLinker();
+        linker.addLinkStrategy( new JavaBeansLinkStrategy() );
+        
+        CallSite callSite = linker.bootstrap("fusion:setProperty", MethodType.methodType(Object.class, Object.class, String.class, Object.class) );
+        
+        Cheese swiss = new Cheese( "swiss", 2 );
+        Person bob = new Person( "bob", 39 );
+        
+        callSite.getTarget().invoke( swiss, "name", "aged swiss" );
+        assertThat( swiss.getName() ).isEqualTo( "aged swiss" );
+        
+        callSite.getTarget().invoke( bob, "name", "bob mcwhirter" );
+        assertThat( bob.getName() ).isEqualTo( "bob mcwhirter" );
+    }
+    
+    @Test
+    public void testLinkJavaBeans_setProperty_fixed() throws Throwable {
+        
+        FusionLinker linker = new FusionLinker();
+        linker.addLinkStrategy( new JavaBeansLinkStrategy() );
+        
+        CallSite callSite = linker.bootstrap("fusion:setProperty:name", MethodType.methodType(Object.class, Object.class, Object.class) );
+        
+        Cheese swiss = new Cheese( "swiss", 2 );
+        Person bob = new Person( "bob", 39 );
+        
+        callSite.getTarget().invoke( swiss, "aged swiss" );
+        assertThat( swiss.getName() ).isEqualTo( "aged swiss" );
+        
+        callSite.getTarget().invoke( bob, "bob mcwhirter" );
+        assertThat( bob.getName() ).isEqualTo( "bob mcwhirter" );
+    }
+    
     
 }
