@@ -7,7 +7,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MutableCallSite;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import com.headius.invokebinder.Binder;
@@ -39,6 +38,10 @@ public class FusionLinker {
 
     public CallSite bootstrap(String name, MethodType type) throws Throwable {
         return bootstrap(MethodHandles.lookup(), name, type);
+    }
+    
+    public CallSite bootstrap(String name, Class<?> returnType, Class<?>...paramTypes) throws Throwable {
+        return bootstrap( name, MethodType.methodType(returnType, paramTypes ) );
     }
 
     public Object linkInvocation(LinkPlan plan, Object[] args) throws Throwable {

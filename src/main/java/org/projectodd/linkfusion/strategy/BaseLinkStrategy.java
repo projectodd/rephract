@@ -26,6 +26,9 @@ public class BaseLinkStrategy implements LinkStrategy {
                 case SET_PROPERTY:
                     link = linkSetProperty(chain, each);
                     break;
+                case GET_METHOD:
+                    link = linkGetMethod(chain, each);
+                    break;
                 }
 
                 if (link != null) {
@@ -63,8 +66,20 @@ public class BaseLinkStrategy implements LinkStrategy {
         return linkSetProperty(chain, receiver, propName, value);
     }
 
-    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String name, Object value) {
+    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value) {
         return chain.nextStrategy();
     }
 
+    protected StrategicLink linkGetMethod(StrategyChain chain, Operation op) {
+        Object receiver = chain.getRequest().receiver();
+        String methName = op.getParameter();
+        if (methName == null) {
+            methName = chain.getRequest().arguments()[1].toString();
+        }
+        return linkGetMethod(chain, receiver, methName);
+    }
+
+    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methName) {
+        return chain.nextStrategy();
+    }
 }

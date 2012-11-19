@@ -25,5 +25,9 @@ public class Cheese {
     public int getAge() {
         return this.age;
     }
+    
+    public void melt() {
+        
+    }
 
 }
