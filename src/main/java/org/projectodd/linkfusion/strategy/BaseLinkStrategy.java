@@ -47,43 +47,49 @@ public class BaseLinkStrategy implements LinkStrategy {
     protected StrategicLink linkGetProperty(StrategyChain chain, Operation op) {
         Object receiver = chain.getRequest().receiver();
         String propName = op.getParameter();
+        boolean dynamic = false;
         if (propName == null) {
+            dynamic = true;
             propName = chain.getRequest().arguments()[1].toString();
         }
-        return linkGetProperty(chain, receiver, propName);
+        return linkGetProperty(chain, receiver, propName, dynamic);
     }
 
-    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName) {
+    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, boolean dynamic) {
         return chain.nextStrategy();
     }
 
     protected StrategicLink linkSetProperty(StrategyChain chain, Operation op) {
         Object receiver = chain.getRequest().receiver();
         String propName = op.getParameter();
+        boolean dynamic = false;
         Object value = null;
         if (propName == null) {
+            dynamic = true;
             propName = chain.getRequest().arguments()[1].toString();
             value = chain.getRequest().arguments()[2];
         } else {
             value = chain.getRequest().arguments()[1];
         }
-        return linkSetProperty(chain, receiver, propName, value);
+        return linkSetProperty(chain, receiver, propName, value, dynamic);
     }
 
-    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value) {
+    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, boolean dynamic) {
         return chain.nextStrategy();
     }
 
     protected StrategicLink linkGetMethod(StrategyChain chain, Operation op) {
         Object receiver = chain.getRequest().receiver();
         String methName = op.getParameter();
+        boolean dynamic = false;
         if (methName == null) {
+            dynamic = true;
             methName = chain.getRequest().arguments()[1].toString();
         }
-        return linkGetMethod(chain, receiver, methName);
+        return linkGetMethod(chain, receiver, methName, dynamic);
     }
 
-    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methName) {
+    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methName, boolean dynamic) {
         return chain.nextStrategy();
     }
     

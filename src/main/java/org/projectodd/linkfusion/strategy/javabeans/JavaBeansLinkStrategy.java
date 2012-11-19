@@ -16,7 +16,7 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
     private Map<Class<?>, ClassManager> classManagers = new HashMap<>();
 
     @Override
-    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName) {
+    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, boolean dynamic) {
         ClassManager classManager = getClassManager(receiver);
 
         MethodHandle reader = classManager.getPropertyReader(propName);
@@ -31,7 +31,9 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
                     .convert(Object.class, receiver.getClass())
                     .invoke(reader);
 
-            return new StrategicLink(bridge, Guards.getReceiverClassGuard(receiver.getClass(), chain.getRequest().type()));
+            return new StrategicLink(bridge, 
+                    dynamic ? Guards.getReceiverClassAndNameGuard(receiver.getClass(), propName, chain.getRequest().type() )
+                            : Guards.getReceiverClassGuard(receiver.getClass(), chain.getRequest().type()));
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }
@@ -40,7 +42,7 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
     }
 
     @Override
-    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value) {
+    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, boolean dynamic) {
         ClassManager classManager = getClassManager(receiver);
 
         MethodHandle writer = classManager.getPropertyWriter(propName, value.getClass());
@@ -63,7 +65,7 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
     }
 
     @Override
-    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName) {
+    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, boolean dynamic) {
         ClassManager classManager = getClassManager(receiver);
 
         UnboundMethod method = classManager.getMethod(methodName);
@@ -81,7 +83,9 @@ public class JavaBeansLinkStrategy extends BaseLinkStrategy {
                     .printType()
                     .identity();
 
-            return new StrategicLink(bridge, Guards.getReceiverClassGuard(receiver.getClass(), chain.getRequest().type()));
+            return new StrategicLink(bridge, 
+                    dynamic ? Guards.getReceiverClassAndNameGuard(receiver.getClass(), methodName, chain.getRequest().type() )
+                            : Guards.getReceiverClassGuard(receiver.getClass(), chain.getRequest().type()));
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();
         }

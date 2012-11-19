@@ -35,6 +35,12 @@ public class FusionLinkerTest {
 
         result = callSite.getTarget().invoke(bob, "name");
         assertThat(result).isEqualTo("bob");
+        
+        result = callSite.getTarget().invoke( swiss, "age" );
+        assertThat(result).isEqualTo(2);
+        
+        result = callSite.getTarget().invoke( bob, "age" );
+        assertThat(result).isEqualTo(39);
     }
 
     @Test
