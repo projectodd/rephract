@@ -145,21 +145,22 @@ public class JavaBeansLinkStrategyTest {
     }
     
     @Test
-    public void testLinkJavaBeans_getMethod_call_dynamic() throws Throwable {
+    public void testLinkJavaBeans_getMethod_call() throws Throwable {
 
         CallSite callSite = linker.bootstrap("fusion:getMethod", Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
 
-        Object result = null;
+        Object method = null;
 
-        result = callSite.getTarget().invoke(swiss, "melt");
-        assertThat(result).isInstanceOf(UnboundMethod.class);
+        method = callSite.getTarget().invoke(swiss, "melt");
+        assertThat(method).isInstanceOf(UnboundMethod.class);
         
         CallSite callSite2 = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class );
         
-        //callSite2.getTarget().invoke( result, swiss, new Object[]{} );
+        Object result = callSite2.getTarget().invoke( method, swiss, new Object[]{ "taco" } );
+        assertThat( result ).isEqualTo( "melting for: taco" );
     }
 
 }

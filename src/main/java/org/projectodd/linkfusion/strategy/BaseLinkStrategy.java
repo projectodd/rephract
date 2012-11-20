@@ -35,6 +35,9 @@ public class BaseLinkStrategy implements LinkStrategy {
                 case GET_METHOD:
                     link = linkGetMethod(chain, each);
                     break;
+                case CALL:
+                    link = linkCall(chain, each);
+                    break;
                 }
 
                 if (link != null) {
@@ -63,7 +66,7 @@ public class BaseLinkStrategy implements LinkStrategy {
             throws NoSuchMethodException, IllegalAccessException {
         return chain.nextStrategy();
     }
-    
+
     protected StrategicLink linkGetMethod(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
         return chain.nextStrategy();
     }
@@ -73,6 +76,14 @@ public class BaseLinkStrategy implements LinkStrategy {
         return chain.nextStrategy();
     }
 
+    protected StrategicLink linkCall(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
+        return chain.nextStrategy();
+    }
+
+    protected StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder)
+            throws NoSuchMethodException, IllegalAccessException {
+        return chain.nextStrategy();
+    }
 
     // ----------------------------------------
     // ----------------------------------------
@@ -90,6 +101,13 @@ public class BaseLinkStrategy implements LinkStrategy {
                 .insert(2, expectedReceiverClass)
                 .insert(3, expectedName)
                 .invokeStatic(lookup(), Guards.class, "receiverClassAndNameGuard");
+    }
+
+    public static MethodHandle getIdentityGuard(Object object, Binder binder) throws NoSuchMethodException, IllegalAccessException {
+        return binder.drop(1, binder.type().parameterCount() - 1)
+                .insert(1, new Class[] { Object.class }, object)
+                .invokeStatic(lookup(), Guards.class, "identityGuard");
+
     }
 
     // ----------------------------------------

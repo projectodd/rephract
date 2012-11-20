@@ -20,5 +20,15 @@ public class UnboundMethod {
     public void addMethod(MethodHandle method) {
         this.methods.add( method );
     }
+    
+    public MethodHandle findMethod(Object[] args) {
+        for ( MethodHandle each : methods ) {
+            if ( (each.type().parameterCount()-1) == args.length ) {
+                return each;
+            }
+        }
+        
+        return null;
+    }
 
 }

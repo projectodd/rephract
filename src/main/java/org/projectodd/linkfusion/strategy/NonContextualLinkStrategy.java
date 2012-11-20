@@ -116,6 +116,41 @@ public class NonContextualLinkStrategy extends BaseLinkStrategy {
 
         return linkGetMethod(chain, receiver, propName, binder, guardBinder);
     }
+    
+    protected StrategicLink linkCall(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
+
+        /*
+         * Arguments must be one of:
+         * 
+         * [ object(receiver) self object[](args) ]
+         * [ object(receiver) context self object[](args) ]
+         */
+
+        Binder binder = Binder.from(chain.getRequest().type());
+        Binder guardBinder = Binder.from(chain.getRequest().type().changeReturnType(boolean.class));
+
+        Object[] args = chain.getRequest().arguments();
+        Object receiver = args[0];
+        
+        Object self = null;
+        Object[] callArgs = null;
+
+        if (args.length == 3) {
+            self = args[1];
+            callArgs = (Object[]) args[2];
+        } else if ( args.length == 3 ) {
+            binder = binder.drop(1);
+            guardBinder = guardBinder.drop(1);
+            self = args[2];
+            callArgs = (Object[]) args[3];
+        }
+        
+        System.err.println( "REQUEST: " + chain.getRequest().type() );
+        binder.printType();
+        guardBinder.printType();
+
+        return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
+    }
 
     // ----------------------------------------
     // ----------------------------------------

@@ -26,8 +26,8 @@ public class Cheese {
         return this.age;
     }
     
-    public void melt() {
-        
+    public String melt(String forRecipe) {
+        return "melting for: " + forRecipe;
     }
 
 }

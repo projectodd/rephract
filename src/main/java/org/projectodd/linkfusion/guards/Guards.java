@@ -22,5 +22,9 @@ public class Guards {
     public static boolean receiverClassAndNameAndValueClassGuard(Object receiver, String name, Object value, Class<?> expectedReceiver, String expectedName, Class<?> expectedValueClass ) {
         return ( expectedReceiver.isAssignableFrom(receiver.getClass()) && ( expectedName.equals( name ) ) && expectedValueClass.isAssignableFrom( value.getClass() ) );
     }
+    
+    public static boolean identityGuard(Object object, Object expectedObject) {
+        return object == expectedObject;
+    }
 
 }

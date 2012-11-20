@@ -19,5 +19,9 @@ public class StrategicLink {
     public MethodHandle getGuard() {
         return this.guard;
     }
+    
+    public String toString() {
+        return "[StrategicLink: target=" + target + "; guard=" + guard + "]";
+    }
 
 }

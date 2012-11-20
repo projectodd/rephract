@@ -1,6 +1,8 @@
 package org.projectodd.linkfusion.strategy.javabeans;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -63,6 +65,38 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
                 .identity();
 
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), methodName, guardBinder) );
+    }
+    
+    
+
+    @Override
+    protected StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+            IllegalAccessException {
+        if ( receiver instanceof UnboundMethod ) {
+            UnboundMethod unboundMethod = (UnboundMethod) receiver;
+            
+            MethodHandle method = unboundMethod.findMethod( args );
+            
+            if ( method == null ) {
+                return chain.nextStrategy();
+            }
+            
+            Class<?>[] spreadTypes = new Class<?>[ args.length ];
+            for ( int i = 0 ; i < spreadTypes.length ; ++i ) {
+                spreadTypes[i] = Object.class;
+            }
+            
+            method = binder.drop(0, 1 )
+                    .spread( spreadTypes )
+                    .invoke( method );
+            
+            MethodHandle guard = getIdentityGuard(receiver, guardBinder);
+            
+            return new StrategicLink( method, guard );
+            
+        }
+        
+        return chain.nextStrategy();
     }
 
     private ClassManager getClassManager(Object obj) {
