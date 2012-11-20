@@ -124,7 +124,6 @@ class LinkPlan {
         }
 
         MethodHandle relink = Binder.from(this.type)
-                .printType()
                 .varargs(0, Object[].class)
                 .convert(Object.class, Object[].class)
                 .insert(0, linker)

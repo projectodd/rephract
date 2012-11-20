@@ -54,7 +54,7 @@ public class ClassManager {
                         writers.add(methodHandle);
                     }
                 } catch (IllegalAccessException e1) {
-                    e1.printStackTrace();
+                    // ignore
                 }
             }
         }
@@ -71,7 +71,6 @@ public class ClassManager {
 
     public MethodHandle getPropertyWriter(String propertyName, Class<?> valueClass) {
         List<MethodHandle> writers = this.propertyWriters.get(propertyName);
-        System.err.println("writers for " + propertyName + " // " + writers);
         if (writers == null) {
             return null;
         }

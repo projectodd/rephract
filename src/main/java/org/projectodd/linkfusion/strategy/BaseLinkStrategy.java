@@ -1,5 +1,8 @@
 package org.projectodd.linkfusion.strategy;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodHandles.Lookup;
 import java.util.List;
 
 import org.projectodd.linkfusion.InvocationRequest;
@@ -7,12 +10,14 @@ import org.projectodd.linkfusion.LinkStrategy;
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
-import org.projectodd.linkfusion.strategy.javabeans.UnboundMethod;
+import org.projectodd.linkfusion.guards.Guards;
+
+import com.headius.invokebinder.Binder;
 
 public class BaseLinkStrategy implements LinkStrategy {
 
     @Override
-    public StrategicLink link(InvocationRequest request, StrategyChain chain) {
+    public StrategicLink link(InvocationRequest request, StrategyChain chain) throws NoSuchMethodException, IllegalAccessException {
 
         if (request.isFusionRequest()) {
             List<Operation> ops = request.getOperations();
@@ -30,9 +35,6 @@ public class BaseLinkStrategy implements LinkStrategy {
                 case GET_METHOD:
                     link = linkGetMethod(chain, each);
                     break;
-                case CALL:
-                    link = linkCall(chain, each);
-                    break;
                 }
 
                 if (link != null) {
@@ -44,61 +46,57 @@ public class BaseLinkStrategy implements LinkStrategy {
         return null;
     }
 
-    protected StrategicLink linkGetProperty(StrategyChain chain, Operation op) {
-        Object receiver = chain.getRequest().receiver();
-        String propName = op.getParameter();
-        boolean dynamic = false;
-        if (propName == null) {
-            dynamic = true;
-            propName = chain.getRequest().arguments()[1].toString();
-        }
-        return linkGetProperty(chain, receiver, propName, dynamic);
-    }
-
-    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, boolean dynamic) {
+    protected StrategicLink linkGetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
         return chain.nextStrategy();
     }
 
-    protected StrategicLink linkSetProperty(StrategyChain chain, Operation op) {
-        Object receiver = chain.getRequest().receiver();
-        String propName = op.getParameter();
-        boolean dynamic = false;
-        Object value = null;
-        if (propName == null) {
-            dynamic = true;
-            propName = chain.getRequest().arguments()[1].toString();
-            value = chain.getRequest().arguments()[2];
-        } else {
-            value = chain.getRequest().arguments()[1];
-        }
-        return linkSetProperty(chain, receiver, propName, value, dynamic);
-    }
-
-    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, boolean dynamic) {
+    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+            IllegalAccessException {
         return chain.nextStrategy();
     }
 
-    protected StrategicLink linkGetMethod(StrategyChain chain, Operation op) {
-        Object receiver = chain.getRequest().receiver();
-        String methName = op.getParameter();
-        boolean dynamic = false;
-        if (methName == null) {
-            dynamic = true;
-            methName = chain.getRequest().arguments()[1].toString();
-        }
-        return linkGetMethod(chain, receiver, methName, dynamic);
+    protected StrategicLink linkSetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
+        return chain.nextStrategy();
     }
 
-    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methName, boolean dynamic) {
+    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, Binder binder, Binder guardBinder)
+            throws NoSuchMethodException, IllegalAccessException {
         return chain.nextStrategy();
     }
     
-    protected StrategicLink linkCall(StrategyChain chain, Operation op) {
-        Object receiver = chain.getRequest().receiver();
-        if ( receiver instanceof UnboundMethod ) {
-           System.err.println( "args: " + chain.getRequest().argumentsList() );
-        }
-        return null;
-        
+    protected StrategicLink linkGetMethod(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
+        return chain.nextStrategy();
     }
+
+    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+            IllegalAccessException {
+        return chain.nextStrategy();
+    }
+
+
+    // ----------------------------------------
+    // ----------------------------------------
+    public static MethodHandle getReceiverClassGuard(Class<?> expectedReceiverClass, Binder binder) throws NoSuchMethodException, IllegalAccessException {
+        return binder
+                .drop(1, binder.type().parameterCount() - 1)
+                .insert(1, expectedReceiverClass)
+                .invokeStatic(lookup(), Guards.class, "receiverClassGuard");
+    }
+
+    public static MethodHandle getReceiverClassAndNameGuard(Class<?> expectedReceiverClass, String expectedName, Binder binder) throws NoSuchMethodException,
+            IllegalAccessException {
+        return binder
+                .drop(2, binder.type().parameterCount() - 2)
+                .insert(2, expectedReceiverClass)
+                .insert(3, expectedName)
+                .invokeStatic(lookup(), Guards.class, "receiverClassAndNameGuard");
+    }
+
+    // ----------------------------------------
+    // ----------------------------------------
+
+    public static Lookup lookup() {
+        return MethodHandles.lookup();
+    }
+
 }

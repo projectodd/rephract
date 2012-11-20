@@ -1,11 +1,11 @@
-package org.projectodd.linkfusion;
+package org.projectodd.linkfusion.strategy.javabeans;
 
-public class Cheese {
+public class Person {
     
     private String name;
     private int age;
 
-    public Cheese(String name, int age) {
+    public Person(String name, int age) {
         this.name = name;
         this.age = age;
     }
@@ -24,10 +24,6 @@ public class Cheese {
     
     public int getAge() {
         return this.age;
-    }
-    
-    public void melt() {
-        
     }
 
 }

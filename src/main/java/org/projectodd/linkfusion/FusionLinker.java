@@ -59,9 +59,4 @@ public class FusionLinker {
         return link.getTarget().invokeWithArguments(args);
     }
 
-    public Object returnSomething() {
-        System.err.println("RETURN SOMETHING!");
-        return System.currentTimeMillis();
-    }
-
 }

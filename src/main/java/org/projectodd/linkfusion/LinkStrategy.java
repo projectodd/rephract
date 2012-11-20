@@ -2,6 +2,6 @@ package org.projectodd.linkfusion;
 
 public interface LinkStrategy {
     
-    StrategicLink link(InvocationRequest request, StrategyChain chain);
+    StrategicLink link(InvocationRequest request, StrategyChain chain) throws NoSuchMethodException, IllegalAccessException;
 
 }

@@ -6,91 +6,63 @@ import java.util.Map;
 
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
-import org.projectodd.linkfusion.guards.Guards;
-import org.projectodd.linkfusion.strategy.BaseLinkStrategy;
+import org.projectodd.linkfusion.strategy.NonContextualLinkStrategy;
 
 import com.headius.invokebinder.Binder;
 
-public class JavaBeansLinkStrategy extends BaseLinkStrategy {
+public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
 
     private Map<Class<?>, ClassManager> classManagers = new HashMap<>();
 
-    @Override
-    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, boolean dynamic) {
-        ClassManager classManager = getClassManager(receiver);
+    public JavaBeansLinkStrategy() {
+    }
 
+    @Override
+    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException, IllegalAccessException {
+        ClassManager classManager = getClassManager(receiver);
         MethodHandle reader = classManager.getPropertyReader(propName);
 
         if (reader == null) {
             return chain.nextStrategy();
         }
 
-        try {
-            MethodHandle bridge = Binder.from(chain.getRequest().type())
-                    .drop(1, chain.getRequest().type().parameterCount() - 1)
-                    .convert(Object.class, receiver.getClass())
-                    .invoke(reader);
+        MethodHandle method = binder.drop(1)
+                .convert(Object.class, receiver.getClass())
+                .invoke(reader);
 
-            return new StrategicLink(bridge, 
-                    dynamic ? Guards.getReceiverClassAndNameGuard(receiver.getClass(), propName, chain.getRequest().type() )
-                            : Guards.getReceiverClassGuard(receiver.getClass(), chain.getRequest().type()));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder) );
     }
-
+    
     @Override
-    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, boolean dynamic) {
+    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, Binder binder, Binder guardBinder) throws NoSuchMethodException, IllegalAccessException {
         ClassManager classManager = getClassManager(receiver);
-
-        MethodHandle writer = classManager.getPropertyWriter(propName, value.getClass());
+        MethodHandle writer = classManager.getPropertyWriter(propName, value.getClass() );
 
         if (writer == null) {
             return chain.nextStrategy();
         }
 
-        try {
-            MethodHandle bridge = Binder.from(chain.getRequest().type())
-                    .drop(1, chain.getRequest().type().parameterCount() - 2)
-                    .invoke(writer);
+        MethodHandle method = binder.drop(1)
+                .convert(Object.class, receiver.getClass())
+                .invoke(writer);
 
-            return new StrategicLink(bridge, Guards.getReceiverAndArgumentClassGuard(receiver.getClass(), value.getClass(), chain.getRequest().type()));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder) );
     }
-
+    
     @Override
-    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, boolean dynamic) {
+    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException, IllegalAccessException {
         ClassManager classManager = getClassManager(receiver);
+        UnboundMethod unboundMethod = classManager.getMethod(methodName);
 
-        UnboundMethod method = classManager.getMethod(methodName);
-
-        if (method == null) {
+        if (unboundMethod == null) {
             return chain.nextStrategy();
         }
 
-        try {
-            MethodHandle bridge = Binder.from(chain.getRequest().type())
-                    .printType()
-                    .drop(0, chain.getRequest().type().parameterCount())
-                    .printType()
-                    .insert(0, method)
-                    .printType()
-                    .identity();
+        MethodHandle method = binder.drop(0, 2)
+                .insert(0, unboundMethod)
+                .identity();
 
-            return new StrategicLink(bridge, 
-                    dynamic ? Guards.getReceiverClassAndNameGuard(receiver.getClass(), methodName, chain.getRequest().type() )
-                            : Guards.getReceiverClassGuard(receiver.getClass(), chain.getRequest().type()));
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-
-        return null;
+        return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), methodName, guardBinder) );
     }
 
     private ClassManager getClassManager(Object obj) {

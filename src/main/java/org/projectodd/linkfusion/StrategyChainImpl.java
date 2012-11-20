@@ -18,7 +18,7 @@ class StrategyChainImpl implements StrategyChain {
     }
 
     @Override
-    public StrategicLink nextStrategy(InvocationRequest request) {
+    public StrategicLink nextStrategy(InvocationRequest request) throws NoSuchMethodException, IllegalAccessException {
 
         if (strategies.size() == 1) {
             return null;
@@ -29,12 +29,11 @@ class StrategyChainImpl implements StrategyChain {
         return chain.linkCurrent();
     }
 
-    public StrategicLink nextStrategy() {
+    public StrategicLink nextStrategy() throws NoSuchMethodException, IllegalAccessException {
         return nextStrategy(this.request);
     }
 
-    public StrategicLink linkCurrent() {
-        System.err.println("link with: " + strategies.get(0));
+    public StrategicLink linkCurrent() throws NoSuchMethodException, IllegalAccessException {
         return strategies.get(0).link(this.request, this);
     }
 
