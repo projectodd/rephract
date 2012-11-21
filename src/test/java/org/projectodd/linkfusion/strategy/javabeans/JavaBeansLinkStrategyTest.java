@@ -159,8 +159,19 @@ public class JavaBeansLinkStrategyTest {
         
         CallSite callSite2 = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class );
         
-        Object result = callSite2.getTarget().invoke( method, swiss, new Object[]{ "taco" } );
+        Object result = null;
+        
+        result = callSite2.getTarget().invoke( method, swiss, new Object[] { "taco" } );
         assertThat( result ).isEqualTo( "melting for: taco" );
+        
+        result = callSite2.getTarget().invoke( method, swiss, new Object[] { bob } );
+        assertThat( result ).isEqualTo( "melted by: bob" );
+        
+        result = callSite2.getTarget().invoke( method, swiss, new Object[] { "taco" } );
+        assertThat( result ).isEqualTo( "melting for: taco" );
+        
+        result = callSite2.getTarget().invoke( method, swiss, new Object[] { bob } );
+        assertThat( result ).isEqualTo( "melted by: bob" );
     }
 
 }

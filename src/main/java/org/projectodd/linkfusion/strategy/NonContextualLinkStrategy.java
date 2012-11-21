@@ -145,10 +145,6 @@ public class NonContextualLinkStrategy extends BaseLinkStrategy {
             callArgs = (Object[]) args[3];
         }
         
-        System.err.println( "REQUEST: " + chain.getRequest().type() );
-        binder.printType();
-        guardBinder.printType();
-
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
     }
 

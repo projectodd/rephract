@@ -29,5 +29,9 @@ public class Cheese {
     public String melt(String forRecipe) {
         return "melting for: " + forRecipe;
     }
+    
+    public String melt(Person byPerson) {
+        return "melted by: " + byPerson.getName();
+    }
 
 }

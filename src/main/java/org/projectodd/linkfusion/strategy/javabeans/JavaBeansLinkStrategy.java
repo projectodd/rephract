@@ -90,13 +90,44 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
                     .spread( spreadTypes )
                     .invoke( method );
             
-            MethodHandle guard = getIdentityGuard(receiver, guardBinder);
+            MethodHandle guard = getCallGuard( receiver, args, guardBinder );
             
             return new StrategicLink( method, guard );
             
         }
         
         return chain.nextStrategy();
+    }
+
+    private MethodHandle getCallGuard(Object self, Object[] args, Binder binder) throws NoSuchMethodException, IllegalAccessException {
+        Class<?>[] argClasses = new Class<?>[ args.length ];
+        
+        for ( int i = 0 ; i < args.length ; ++i ) {
+            argClasses[i] = args[i].getClass();
+        }
+        
+        return binder.drop( 0 )
+                .insert(2, self.getClass() )
+                .insert(3, (Object) argClasses )
+            .invokeStatic( lookup(), JavaBeansLinkStrategy.class, "callGuard" );
+    }
+    
+    public static boolean callGuard(Object self, Object[] args, Class<?> expectedReceiverClass, Class<?>[] expectedArgClasses) {
+        if ( ! expectedReceiverClass.isAssignableFrom( self.getClass() ) ) {
+            return false;
+        }
+        
+        if ( args.length != expectedArgClasses.length ) {
+            return false;
+        }
+        
+        for ( int i = 0 ; i < args.length ; ++i ) {
+            if ( ! expectedArgClasses[i].isAssignableFrom( args[i].getClass() ) ) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
     private ClassManager getClassManager(Object obj) {

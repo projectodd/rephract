@@ -24,11 +24,23 @@ public class UnboundMethod {
     public MethodHandle findMethod(Object[] args) {
         for ( MethodHandle each : methods ) {
             if ( (each.type().parameterCount()-1) == args.length ) {
+                if ( parametersMatch( each.type().parameterArray(), args )) {
                 return each;
+                }
             }
         }
         
         return null;
+    }
+
+    private boolean parametersMatch(Class<?>[] paramTypes, Object[] args) {
+        for ( int i = 0 ; i < args.length ; ++i ) {
+            if ( ! paramTypes[i+1].isAssignableFrom( args[i].getClass() ) ) {
+                return false;
+            }
+        }
+        
+        return true;
     }
 
 }
