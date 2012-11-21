@@ -142,6 +142,40 @@ public class ContextualLinkStrategy<T> extends BaseLinkStrategy {
         return linkSetProperty(chain, receiver, propName, value, binder, guardBinder);
     }
 
+    @Override
+    protected StrategicLink linkCall(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
+        /*
+         * Arguments must be one of:
+         * 
+         * [ object(receiver) object(self) object[](args)
+         * [ object(receiver) ?(context) object(self) object[](args)
+         */
+
+        Binder binder = Binder.from(chain.getRequest().type());
+        Binder guardBinder = Binder.from(chain.getRequest().type().changeReturnType(boolean.class));
+
+        Object[] args = chain.getRequest().arguments();
+        Object receiver = args[0];
+        Object self = null;
+
+        Object[] callArgs = (Object[]) args[args.length - 1];
+
+        if (args.length == 3) {
+            self = args[1];
+            binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
+            binder = binder.filter(1, getContextAcquisitionFilter());
+
+            guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
+            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+        } else if (args.length == 4) {
+            self = args[2];
+            binder = binder.filter(1, getContextAcquisitionFilter());
+            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+        }
+        
+        return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
+    }
+
     public static MethodHandle getReceiverClassAndNameAndValueClassGuard(Class<?> expectedReceiverClass, String expectedName, Class<?> expectedValueClass, Binder binder)
             throws NoSuchMethodException,
             IllegalAccessException {

@@ -38,7 +38,6 @@ public class MockContextualLinkStrategy extends ContextualLinkStrategy<LangConte
     @Override
     protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, Binder binder, Binder guardBinder)
             throws NoSuchMethodException, IllegalAccessException {
-        System.err.println( "propName: " + propName );
         if (receiver instanceof LangObject) {
             MethodHandle method = binder.convert(void.class, LangObject.class, LangContext.class, String.class, Object.class)
                     .invokeVirtual(lookup(), "put");
@@ -47,5 +46,24 @@ public class MockContextualLinkStrategy extends ContextualLinkStrategy<LangConte
 
         return chain.nextStrategy();
     }
+
+    @Override
+    protected StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+            IllegalAccessException {
+        if ( receiver instanceof LangFunction ) {
+            Class<?>[] spreadTypes = new Class<?>[ args.length ];
+            for ( int i = 0 ; i < spreadTypes.length ; ++i ) {
+                spreadTypes[i] = Object.class;
+            }
+            MethodHandle method = binder.convert( Object.class, LangFunction.class, LangContext.class, Object.class, Object[].class )
+                    .invokeVirtual(lookup(), "call" );
+            
+            return new StrategicLink(method, getIdentityGuard(receiver, guardBinder));
+            
+        }
+        
+        return chain.nextStrategy();
+    }
+    
 
 }

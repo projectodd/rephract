@@ -128,5 +128,44 @@ public class ContextualLinkStrategyTest {
         assertThat(bob.get(context, "name")).isEqualTo("bob");
         assertThat(bob.get(context, "age")).isEqualTo(39);
     }
+    
+    @Test
+    public void testCall_withContext() throws Throwable {
+        CallSite callSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object.class, Object[].class);
+
+        LangContext context = new LangContext();
+        LangContext.setThreadContext(context);
+        LangFunction function = new LangFunction();
+
+        
+        Object result = callSite.getTarget().invoke( function, context, null, new Object[] { "one", "two" } );
+        assertThat( result ).isEqualTo( "one,two" );
+    }
+    
+    @Test
+    public void testCall_withoutContext() throws Throwable {
+        CallSite callSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class);
+
+        LangContext context = new LangContext();
+        LangContext.setThreadContext(context);
+        LangFunction function = new LangFunction();
+
+        
+        Object result = callSite.getTarget().invoke( function, null, new Object[] { "one", "two" } );
+        assertThat( result ).isEqualTo( "one,two" );
+    }
+    
+    @Test
+    public void testCall_withWrongContext() throws Throwable {
+        CallSite callSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object.class, Object[].class);
+
+        LangContext context = new LangContext();
+        LangContext.setThreadContext(context);
+        LangFunction function = new LangFunction();
+
+        
+        Object result = callSite.getTarget().invoke( function, "not my context", null, new Object[] { "one", "two" } );
+        assertThat( result ).isEqualTo( "one,two" );
+    }
 
 }
