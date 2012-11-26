@@ -2,10 +2,8 @@ package org.projectodd.linkfusion.strategy;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.util.List;
+import java.util.Arrays;
 
-import org.projectodd.linkfusion.InvocationRequest;
-import org.projectodd.linkfusion.LinkStrategy;
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -174,6 +172,37 @@ public class ContextualLinkStrategy<T> extends BaseLinkStrategy {
         }
         
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
+    }
+    
+    @Override
+    protected StrategicLink linkConstruct(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
+        /*
+         * Arguments must be one of:
+         * 
+         * [ object(receiver) object[](args)
+         * [ object(receiver) ?(context) object[](args)
+         */
+
+        Binder binder = Binder.from(chain.getRequest().type());
+        Binder guardBinder = Binder.from(chain.getRequest().type().changeReturnType(boolean.class));
+
+        Object[] args = chain.getRequest().arguments();
+        Object receiver = args[0];
+
+        Object[] callArgs = (Object[]) args[args.length - 1];
+        
+        if (args.length == 2) {
+            binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
+            binder = binder.filter(1, getContextAcquisitionFilter());
+
+            guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
+            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+        } else if (args.length == 3) {
+            binder = binder.filter(1, getContextAcquisitionFilter());
+            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+        }
+        
+        return linkConstruct(chain, receiver, callArgs, binder, guardBinder);
     }
 
     public static MethodHandle getReceiverClassAndNameAndValueClassGuard(Class<?> expectedReceiverClass, String expectedName, Class<?> expectedValueClass, Binder binder)

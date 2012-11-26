@@ -51,6 +51,7 @@ public class MockContextualLinkStrategy extends ContextualLinkStrategy<LangConte
     protected StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
         if ( receiver instanceof LangFunction ) {
+            
             Class<?>[] spreadTypes = new Class<?>[ args.length ];
             for ( int i = 0 ; i < spreadTypes.length ; ++i ) {
                 spreadTypes[i] = Object.class;
@@ -64,6 +65,26 @@ public class MockContextualLinkStrategy extends ContextualLinkStrategy<LangConte
         
         return chain.nextStrategy();
     }
+
+    @Override
+    protected StrategicLink linkConstruct(StrategyChain chain, Object receiver, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+            IllegalAccessException {
+        if ( receiver instanceof LangFunction ) {
+            Class<?>[] spreadTypes = new Class<?>[ args.length ];
+            for ( int i = 0 ; i < spreadTypes.length ; ++i ) {
+                spreadTypes[i] = Object.class;
+            }
+            MethodHandle method = binder.convert( Object.class, LangFunction.class, LangContext.class, Object[].class )
+                    .insert(2, new Class<?>[]{ Object.class}, (Object) null)
+                    .invokeVirtual(lookup(), "call" );
+            
+            return new StrategicLink(method, getIdentityGuard(receiver, guardBinder));
+            
+        }
+        
+        return chain.nextStrategy();
+    }
+    
     
 
 }
