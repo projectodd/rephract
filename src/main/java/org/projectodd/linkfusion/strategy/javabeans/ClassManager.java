@@ -3,6 +3,7 @@ package org.projectodd.linkfusion.strategy.javabeans;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -14,7 +15,8 @@ public class ClassManager {
 
     private Class<?> target;
 
-    private Map<String, UnboundMethod> methods = new HashMap<>();
+    private DynamicConstructor constructor = new DynamicConstructor();
+    private Map<String, DynamicMethod> methods = new HashMap<>();
     private Map<String, MethodHandle> propertyReaders = new HashMap<>();
     private Map<String, List<MethodHandle>> propertyWriters = new HashMap<>();
 
@@ -25,6 +27,16 @@ public class ClassManager {
 
     private void analyze() {
         Lookup lookup = MethodHandles.lookup();
+        
+        Constructor<?>[] constructors = this.target.getConstructors();
+        
+        for ( int i =0 ; i < constructors.length ; ++i ) {
+            try {
+                this.constructor.addConstructor( lookup.unreflectConstructor( constructors[i] ) );
+            } catch (IllegalAccessException e) {
+                // ignore
+            }
+        }
 
         Method[] methods = this.target.getMethods();
 
@@ -33,9 +45,9 @@ public class ClassManager {
             if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
                 String name = methods[i].getName();
 
-                UnboundMethod unboundMethod = this.methods.get(name);
+                DynamicMethod unboundMethod = this.methods.get(name);
                 if (unboundMethod == null) {
-                    unboundMethod = new UnboundMethod(name);
+                    unboundMethod = new DynamicMethod(name);
                     this.methods.put(name, unboundMethod);
                 }
 
@@ -83,10 +95,14 @@ public class ClassManager {
         return null;
     }
 
-    public UnboundMethod getMethod(String methodName) {
+    public DynamicMethod getMethod(String methodName) {
         return this.methods.get(methodName);
     }
-
+    
+    public DynamicConstructor getConstructor() {
+        return this.constructor;
+    }
+    
     public static String propertyName(String methodName) {
         return methodName.substring(3, 4).toLowerCase() + methodName.substring(4);
     }

@@ -38,6 +38,9 @@ public class BaseLinkStrategy implements LinkStrategy {
                 case CALL:
                     link = linkCall(chain, each);
                     break;
+                case CONSTRUCT:
+                    link = linkConstruct(chain, each);
+                    break;
                 }
 
                 if (link != null) {
@@ -81,6 +84,15 @@ public class BaseLinkStrategy implements LinkStrategy {
     }
 
     protected StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder)
+            throws NoSuchMethodException, IllegalAccessException {
+        return chain.nextStrategy();
+    }
+    
+    protected StrategicLink linkConstruct(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
+        return chain.nextStrategy();
+    }
+
+    protected StrategicLink linkConstruct(StrategyChain chain, Object receiver, Object[] args, Binder binder, Binder guardBinder)
             throws NoSuchMethodException, IllegalAccessException {
         return chain.nextStrategy();
     }

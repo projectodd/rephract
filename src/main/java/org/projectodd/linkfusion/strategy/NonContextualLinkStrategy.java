@@ -138,7 +138,7 @@ public class NonContextualLinkStrategy extends BaseLinkStrategy {
         if (args.length == 3) {
             self = args[1];
             callArgs = (Object[]) args[2];
-        } else if ( args.length == 3 ) {
+        } else if ( args.length == 4 ) {
             binder = binder.drop(1);
             guardBinder = guardBinder.drop(1);
             self = args[2];
@@ -146,6 +146,34 @@ public class NonContextualLinkStrategy extends BaseLinkStrategy {
         }
         
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
+    }
+    
+    protected StrategicLink linkConstruct(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
+
+        /*
+         * Arguments must be one of:
+         * 
+         * [ object(receiver) object[](args) ]
+         * [ object(receiver) context object[](args) ]
+         */
+
+        Binder binder = Binder.from(chain.getRequest().type());
+        Binder guardBinder = Binder.from(chain.getRequest().type().changeReturnType(boolean.class));
+
+        Object[] args = chain.getRequest().arguments();
+        Object receiver = args[0];
+        
+        Object[] callArgs = null;
+
+        if (args.length == 2) {
+            callArgs = (Object[]) args[1];
+        } else if ( args.length == 3 ) {
+            binder = binder.drop(1);
+            guardBinder = guardBinder.drop(1);
+            callArgs = (Object[]) args[2];
+        }
+        
+        return linkConstruct(chain, receiver, callArgs, binder, guardBinder);
     }
 
     // ----------------------------------------

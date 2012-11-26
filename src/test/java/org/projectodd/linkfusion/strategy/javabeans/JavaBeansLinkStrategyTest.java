@@ -111,7 +111,7 @@ public class JavaBeansLinkStrategyTest {
         Object result = null;
 
         result = callSite.getTarget().invoke(swiss, "melt");
-        assertThat(result).isInstanceOf(UnboundMethod.class);
+        assertThat(result).isInstanceOf(DynamicMethod.class);
 
         try {
             result = callSite.getTarget().invoke(bob, "melt");
@@ -133,7 +133,7 @@ public class JavaBeansLinkStrategyTest {
         Object result = null;
 
         result = callSite.getTarget().invoke(swiss);
-        assertThat(result).isInstanceOf(UnboundMethod.class);
+        assertThat(result).isInstanceOf(DynamicMethod.class);
 
         try {
             result = callSite.getTarget().invoke(bob);
@@ -155,7 +155,7 @@ public class JavaBeansLinkStrategyTest {
         Object method = null;
 
         method = callSite.getTarget().invoke(swiss, "melt");
-        assertThat(method).isInstanceOf(UnboundMethod.class);
+        assertThat(method).isInstanceOf(DynamicMethod.class);
         
         CallSite callSite2 = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class );
         
@@ -172,6 +172,43 @@ public class JavaBeansLinkStrategyTest {
         
         result = callSite2.getTarget().invoke( method, swiss, new Object[] { bob } );
         assertThat( result ).isEqualTo( "melted by: bob" );
+    }
+    
+    @Test
+    public void testLinkJavaBeans_construct() throws Throwable {
+        
+        CallSite callSite = linker.bootstrap("fusion:construct", Object.class, Object.class, Object[].class);
+        
+        Object result = null;
+        
+        result = callSite.getTarget().invoke( Cheese.class, new Object[] { "swiss", 2 } );
+        
+        assertThat( result ).isNotNull();
+        assertThat( result ).isInstanceOf(Cheese.class);
+        assertThat( ((Cheese)result).getName() ).isEqualTo( "swiss" );
+        assertThat( ((Cheese)result).getAge() ).isEqualTo( 2 );
+        
+        result = callSite.getTarget().invoke( Person.class, new Object[] { "bob", 39 } );
+        
+        assertThat( result ).isNotNull();
+        assertThat( result ).isInstanceOf(Person.class);
+        assertThat( ((Person)result).getName() ).isEqualTo( "bob" );
+        assertThat( ((Person)result).getAge() ).isEqualTo( 39 );
+        
+        result = callSite.getTarget().invoke( Cheese.class, new Object[] { "swiss", 2 } );
+        
+        assertThat( result ).isNotNull();
+        assertThat( result ).isInstanceOf(Cheese.class);
+        assertThat( ((Cheese)result).getName() ).isEqualTo( "swiss" );
+        assertThat( ((Cheese)result).getAge() ).isEqualTo( 2 );
+        
+        result = callSite.getTarget().invoke( Person.class, new Object[] { "bob", 39 } );
+        
+        assertThat( result ).isNotNull();
+        assertThat( result ).isInstanceOf(Person.class);
+        assertThat( ((Person)result).getName() ).isEqualTo( "bob" );
+        assertThat( ((Person)result).getAge() ).isEqualTo( 39 );
+        
     }
 
 }

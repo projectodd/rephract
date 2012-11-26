@@ -79,6 +79,9 @@ class LinkPlan {
                 case "call":
                     op = new OperationImpl( Type.CALL, parameter);
                     break;
+                case "construct":
+                    op = new OperationImpl( Type.CONSTRUCT, parameter);
+                    break;
                 }
                 
                 this.operations.add( op );

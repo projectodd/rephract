@@ -8,7 +8,8 @@ public interface Operation {
         GET_ELEMENT,
         SET_ELEMENT,
         GET_METHOD,
-        CALL
+        CALL,
+        CONSTRUCT
     }
     
     Type getType();
