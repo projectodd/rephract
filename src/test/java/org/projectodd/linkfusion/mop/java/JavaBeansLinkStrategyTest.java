@@ -1,4 +1,4 @@
-package org.projectodd.linkfusion.strategy.javabeans;
+package org.projectodd.linkfusion.mop.java;
 
 import static org.fest.assertions.Assertions.assertThat;
 
@@ -7,6 +7,8 @@ import java.lang.invoke.CallSite;
 import org.junit.Before;
 import org.junit.Test;
 import org.projectodd.linkfusion.FusionLinker;
+import org.projectodd.linkfusion.mop.java.DynamicMethod;
+import org.projectodd.linkfusion.mop.java.JavaLinkStrategy;
 
 public class JavaBeansLinkStrategyTest {
     
@@ -15,7 +17,7 @@ public class JavaBeansLinkStrategyTest {
     @Before
     public void setUp() {
         this.linker = new FusionLinker();
-        this.linker.addLinkStrategy(new JavaBeansLinkStrategy());
+        this.linker.addLinkStrategy(new JavaLinkStrategy());
     }
 
     @Test

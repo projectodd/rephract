@@ -1,4 +1,4 @@
-package org.projectodd.linkfusion.strategy.javabeans;
+package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -10,6 +10,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static org.projectodd.linkfusion.mop.java.TypeComparisons.*;
+
 
 public class ClassManager {
 
@@ -88,7 +91,7 @@ public class ClassManager {
         }
 
         for (MethodHandle each : writers) {
-            if (each.type().parameterCount() == 2 && each.type().parameterType(1).isAssignableFrom(valueClass)) {
+            if (each.type().parameterCount() == 2 && isCompatible(each.type().parameterType(1), valueClass ) ) {
                 return each;
             }
         }

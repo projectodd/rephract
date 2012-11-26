@@ -1,4 +1,4 @@
-package org.projectodd.linkfusion.strategy;
+package org.projectodd.linkfusion.mop;
 
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
@@ -6,7 +6,7 @@ import org.projectodd.linkfusion.StrategyChain;
 
 import com.headius.invokebinder.Binder;
 
-public class NonContextualLinkStrategy extends BaseLinkStrategy {
+public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLinkStrategy {
 
     public NonContextualLinkStrategy() {
     }

@@ -1,26 +1,24 @@
-package org.projectodd.linkfusion.strategy.javabeans;
+package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
-import org.projectodd.linkfusion.strategy.NonContextualLinkStrategy;
+import org.projectodd.linkfusion.mop.NonContextualLinkStrategy;
 
 import com.headius.invokebinder.Binder;
 
-public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
+public class JavaLinkStrategy extends NonContextualLinkStrategy {
 
     private Map<Class<?>, ClassManager> classManagers = new HashMap<>();
 
-    public JavaBeansLinkStrategy() {
+    public JavaLinkStrategy() {
     }
 
     @Override
-    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+    public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
         ClassManager classManager = getClassManager(receiver.getClass());
         MethodHandle reader = classManager.getPropertyReader(propName);
@@ -37,11 +35,12 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
     }
 
     @Override
-    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, Binder binder, Binder guardBinder)
+    public StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, Binder binder, Binder guardBinder)
             throws NoSuchMethodException, IllegalAccessException {
+        
         ClassManager classManager = getClassManager(receiver.getClass());
         MethodHandle writer = classManager.getPropertyWriter(propName, value.getClass());
-
+        
         if (writer == null) {
             return chain.nextStrategy();
         }
@@ -54,7 +53,7 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
     }
 
     @Override
-    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+    public StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
         ClassManager classManager = getClassManager(receiver.getClass());
         DynamicMethod dynamicMethod = classManager.getMethod(methodName);
@@ -71,7 +70,7 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
     }
 
     @Override
-    protected StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+    public StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
         if (receiver instanceof DynamicMethod) {
             DynamicMethod dynamicMethod = (DynamicMethod) receiver;
@@ -101,7 +100,7 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
     }
 
     @Override
-    protected StrategicLink linkConstruct(StrategyChain chain, Object receiver, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+    public StrategicLink linkConstruct(StrategyChain chain, Object receiver, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
 
         if (receiver instanceof Class<?>) {
@@ -116,15 +115,15 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
             if (ctor == null) {
                 return chain.nextStrategy();
             }
-            
-            System.err.println( "CTOR: " + ctor );
+
+            System.err.println("CTOR: " + ctor);
 
             Class<?>[] spreadTypes = new Class<?>[args.length];
             for (int i = 0; i < spreadTypes.length; ++i) {
                 spreadTypes[i] = Object.class;
             }
 
-            System.err.println( "_---_" );
+            System.err.println("_---_");
             ctor = binder.printType()
                     .drop(0)
                     .spread(spreadTypes)
@@ -149,7 +148,7 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
         return binder.drop(0)
                 .insert(2, self.getClass())
                 .insert(3, (Object) argClasses)
-                .invokeStatic(lookup(), JavaBeansLinkStrategy.class, "callGuard");
+                .invokeStatic(lookup(), JavaLinkStrategy.class, "callGuard");
     }
 
     public static boolean callGuard(Object self, Object[] args, Class<?> expectedReceiverClass, Class<?>[] expectedArgClasses) {
@@ -180,11 +179,11 @@ public class JavaBeansLinkStrategy extends NonContextualLinkStrategy {
         return binder
                 .insert(2, targetClass)
                 .insert(3, (Object) argClasses)
-                .invokeStatic(lookup(), JavaBeansLinkStrategy.class, "constructGuard");
+                .invokeStatic(lookup(), JavaLinkStrategy.class, "constructGuard");
     }
-    
+
     public static boolean constructGuard(Object targetClass, Object[] args, Class<?> expectedTargetClass, Class<?>[] expectedArgClasses) {
-        if (targetClass != expectedTargetClass ) {
+        if (targetClass != expectedTargetClass) {
             return false;
         }
 

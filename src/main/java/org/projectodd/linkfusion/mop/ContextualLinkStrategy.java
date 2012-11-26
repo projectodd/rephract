@@ -1,8 +1,7 @@
-package org.projectodd.linkfusion.strategy;
+package org.projectodd.linkfusion.mop;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
-import java.util.Arrays;
 
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
@@ -11,7 +10,7 @@ import org.projectodd.linkfusion.guards.Guards;
 
 import com.headius.invokebinder.Binder;
 
-public class ContextualLinkStrategy<T> extends BaseLinkStrategy {
+public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLinkStrategy {
 
     private Class<T> runtimeContextClass;
 
@@ -85,6 +84,53 @@ public class ContextualLinkStrategy<T> extends BaseLinkStrategy {
             propName = chain.getRequest().arguments()[1].toString();
         }
         return linkGetProperty(chain, receiver, propName, binder, guardBinder);
+    }
+    
+    @Override
+    protected StrategicLink linkGetMethod(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
+
+        /*
+         * Arguments must be either:
+         * 
+         * [ object(receiver) ] with name encoded in operation
+         * [ object(receiver), string(name) ]
+         * [ object(receiver), T(context) ] with name encoded in operation
+         * [ object(receiver), T(context), string(name) ]
+         */
+
+        Binder binder = Binder.from(chain.getRequest().type());
+        Binder guardBinder = Binder.from(chain.getRequest().type().changeReturnType(boolean.class));
+
+        Object[] args = chain.getRequest().arguments();
+
+        if (args.length == 1) {
+            binder = binder.insert(1, (Object) null);
+            binder = binder.filter(1, getContextAcquisitionFilter());
+            binder.insert(2, op.getParameter());
+
+            guardBinder = guardBinder.insert(1, (Object) null);
+            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            guardBinder.insert(2, op.getParameter());
+        } else if (args.length == 2) {
+            if (args[1] instanceof String) {
+                binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
+                binder = binder.filter(1, getContextAcquisitionFilter());
+
+                guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
+                guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            }
+        } else if (args.length == 3) {
+            binder = binder.filter(1, getContextAcquisitionFilter());
+
+            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+        }
+
+        Object receiver = chain.getRequest().receiver();
+        String propName = op.getParameter();
+        if (propName == null) {
+            propName = chain.getRequest().arguments()[1].toString();
+        }
+        return linkGetMethod(chain, receiver, propName, binder, guardBinder);
     }
 
     @Override

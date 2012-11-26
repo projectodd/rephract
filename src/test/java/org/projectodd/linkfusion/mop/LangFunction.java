@@ -1,4 +1,4 @@
-package org.projectodd.linkfusion.strategy;
+package org.projectodd.linkfusion.mop;
 
 import java.util.Arrays;
 

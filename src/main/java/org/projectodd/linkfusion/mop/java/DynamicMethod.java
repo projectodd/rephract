@@ -1,4 +1,4 @@
-package org.projectodd.linkfusion.strategy.javabeans;
+package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;

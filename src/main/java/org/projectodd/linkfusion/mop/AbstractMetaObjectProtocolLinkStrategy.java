@@ -1,4 +1,4 @@
-package org.projectodd.linkfusion.strategy;
+package org.projectodd.linkfusion.mop;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -14,7 +14,7 @@ import org.projectodd.linkfusion.guards.Guards;
 
 import com.headius.invokebinder.Binder;
 
-public class BaseLinkStrategy implements LinkStrategy {
+public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObjectProtocolLinkStrategy {
 
     @Override
     public StrategicLink link(InvocationRequest request, StrategyChain chain) throws NoSuchMethodException, IllegalAccessException {
@@ -52,53 +52,15 @@ public class BaseLinkStrategy implements LinkStrategy {
         return null;
     }
 
-    protected StrategicLink linkGetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
+    abstract protected StrategicLink linkGetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+    abstract protected StrategicLink linkSetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+    abstract protected StrategicLink linkGetMethod(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+    abstract protected StrategicLink linkCall(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+    abstract protected StrategicLink linkConstruct(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
 
-    protected StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
-            IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    protected StrategicLink linkSetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    protected StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, Binder binder, Binder guardBinder)
-            throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    protected StrategicLink linkGetMethod(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    protected StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
-            IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    protected StrategicLink linkCall(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    protected StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder)
-            throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
+    // ----------------------------------------
+    // ----------------------------------------
     
-    protected StrategicLink linkConstruct(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    protected StrategicLink linkConstruct(StrategyChain chain, Object receiver, Object[] args, Binder binder, Binder guardBinder)
-            throws NoSuchMethodException, IllegalAccessException {
-        return chain.nextStrategy();
-    }
-
-    // ----------------------------------------
-    // ----------------------------------------
     public static MethodHandle getReceiverClassGuard(Class<?> expectedReceiverClass, Binder binder) throws NoSuchMethodException, IllegalAccessException {
         return binder
                 .drop(1, binder.type().parameterCount() - 1)
