@@ -10,7 +10,7 @@ import org.projectodd.linkfusion.FusionLinker;
 import org.projectodd.linkfusion.mop.java.DynamicMethod;
 import org.projectodd.linkfusion.mop.java.JavaLinkStrategy;
 
-public class JavaBeansLinkStrategyTest {
+public class JavaLinkStrategyTest {
     
     private FusionLinker linker;
 
