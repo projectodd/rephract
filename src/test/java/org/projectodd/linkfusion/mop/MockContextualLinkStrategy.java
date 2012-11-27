@@ -24,6 +24,12 @@ public class MockContextualLinkStrategy extends ContextualLinkStrategy<LangConte
     }
 
     @Override
+    public StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+            IllegalAccessException {
+        return linkGetProperty(chain, receiver, methodName, binder, guardBinder);
+    }
+
+    @Override
     public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
         if (receiver instanceof LangObject) {
