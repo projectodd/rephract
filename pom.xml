@@ -186,13 +186,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <enableAssertions>false</enableAssertions>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
 

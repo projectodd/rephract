@@ -1,5 +1,7 @@
 package org.projectodd.linkfusion.mop;
 
+import java.util.Arrays;
+
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -30,15 +32,25 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
         String propName = op.getParameter();
 
         if (args.length == 1) {
-            binder = binder.insert(1, op.getParameter());
-            guardBinder = guardBinder.insert(1, op.getParameter());
+            // no context, no name
+            binder = insertName( binder, op.getParameter() );
+            guardBinder = insertName( guardBinder, op.getParameter() );
         } else if (args.length == 2) {
-            if ( propName == null ) {
+            if (propName == null) {
+                // name, not context
                 propName = (String) args[1];
+            } else {
+                // context, not name
+                binder = dropContext(binder);
+                binder = insertName( binder, propName );
+                guardBinder = dropContext(guardBinder);
+                guardBinder = insertName( guardBinder, propName );
             }
         } else if (args.length == 3) {
-            binder = binder.drop(1);
-            guardBinder = guardBinder.drop(1);
+            // name and context
+            propName = (String) args[2];
+            binder = dropContext(binder);
+            guardBinder = dropContext(guardBinder);
         }
 
         return linkGetProperty(chain, receiver, propName, binder, guardBinder);
@@ -64,26 +76,37 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
 
         Object[] args = chain.getRequest().arguments();
         Object receiver = args[0];
-        Object value = args[ args.length - 1 ];
+        Object value = args[args.length - 1];
         String propName = op.getParameter();
 
         if (args.length == 2) {
-            propName = op.getParameter();
-            binder = binder.insert(1, op.getParameter());
-            guardBinder = guardBinder.insert(1, op.getParameter());
+            // no context, no name
+            binder = insertName( binder, op.getParameter() );
+            guardBinder = insertName( guardBinder, op.getParameter() );
         } else if (args.length == 3) {
-            if ( propName == null ) {
+            if (propName == null) {
+                // name, not context
                 propName = (String) args[1];
+            } else {
+                // context, not name
+                binder = dropContext(binder);
+                binder = insertName( binder, propName );
+                guardBinder = dropContext(guardBinder);
+                guardBinder = insertName( guardBinder, propName );
             }
         } else if (args.length == 4) {
+            // name and context
             propName = (String) args[2];
-            binder = binder.drop(1);
-            guardBinder = guardBinder.drop(1);
+            binder = dropContext(binder);
+            guardBinder = dropContext(guardBinder);
         }
-        
-        return linkSetProperty(chain, receiver, propName, value, binder, guardBinder );
+
+        binder = binder.convert(Object.class, Object.class, String.class, Object.class);
+        guardBinder = guardBinder.convert(boolean.class, Object.class, String.class, Object.class);
+
+        return linkSetProperty(chain, receiver, propName, value, binder, guardBinder);
     }
-    
+
     protected StrategicLink linkGetMethod(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
 
         /*
@@ -93,6 +116,10 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
          * [ object(receiver), string(name) ]
          * [ object(receiver), ?(context) ] with name encoded in operation
          * [ object(receiver), ?(context), string(name) ]
+         * 
+         * Should result in:
+         * 
+         * [ object(receiver), string(name) ]
          */
 
         Binder binder = Binder.from(chain.getRequest().type());
@@ -103,20 +130,33 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
         String propName = op.getParameter();
 
         if (args.length == 1) {
-            binder = binder.insert(1, op.getParameter());
-            guardBinder = guardBinder.insert(1, op.getParameter());
+            // no context, no name
+            binder = insertName( binder, op.getParameter() );
+            guardBinder = insertName( guardBinder, op.getParameter() );
         } else if (args.length == 2) {
-            if ( propName == null ) {
+            if (propName == null) {
+                // name, not context
                 propName = (String) args[1];
+            } else {
+                // context, not name
+                binder = dropContext(binder);
+                binder = insertName( binder, propName );
+                guardBinder = dropContext(guardBinder);
+                guardBinder = insertName( guardBinder, propName );
             }
         } else if (args.length == 3) {
-            binder = binder.drop(1);
-            guardBinder = guardBinder.drop(1);
+            // name and context
+            propName = (String) args[2];
+            binder = dropContext(binder);
+            guardBinder = dropContext(guardBinder);
         }
+        
+        binder = binder.convert(Object.class, Object.class, String.class);
+        guardBinder = guardBinder.convert(boolean.class, Object.class, String.class);
 
         return linkGetMethod(chain, receiver, propName, binder, guardBinder);
     }
-    
+
     protected StrategicLink linkCall(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
 
         /*
@@ -124,6 +164,10 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
          * 
          * [ object(receiver) self object[](args) ]
          * [ object(receiver) context self object[](args) ]
+         * 
+         * Should result in:
+         * 
+         * [ object(receiver) object(self) object[](args) ]
          */
 
         Binder binder = Binder.from(chain.getRequest().type());
@@ -131,23 +175,25 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
 
         Object[] args = chain.getRequest().arguments();
         Object receiver = args[0];
-        
+
         Object self = null;
         Object[] callArgs = null;
 
         if (args.length == 3) {
+            // no context
             self = args[1];
             callArgs = (Object[]) args[2];
-        } else if ( args.length == 4 ) {
-            binder = binder.drop(1);
-            guardBinder = guardBinder.drop(1);
+        } else if (args.length == 4) {
+            // with context
+            binder = dropContext(binder);
+            guardBinder = dropContext(guardBinder);
             self = args[2];
             callArgs = (Object[]) args[3];
         }
-        
+
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
     }
-    
+
     protected StrategicLink linkConstruct(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
 
         /*
@@ -162,18 +208,26 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
 
         Object[] args = chain.getRequest().arguments();
         Object receiver = args[0];
-        
+
         Object[] callArgs = null;
 
         if (args.length == 2) {
             callArgs = (Object[]) args[1];
-        } else if ( args.length == 3 ) {
+        } else if (args.length == 3) {
             binder = binder.drop(1);
             guardBinder = guardBinder.drop(1);
             callArgs = (Object[]) args[2];
         }
-        
+
         return linkConstruct(chain, receiver, callArgs, binder, guardBinder);
+    }
+    
+    private Binder dropContext(Binder binder) {
+        return binder.drop(1);
+    }
+    
+    private Binder insertName(Binder binder, String name) {
+        return binder.insert(1, name);
     }
 
     // ----------------------------------------

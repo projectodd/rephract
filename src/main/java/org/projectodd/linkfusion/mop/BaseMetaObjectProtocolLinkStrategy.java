@@ -6,7 +6,7 @@ import org.projectodd.linkfusion.StrategyChain;
 import com.headius.invokebinder.Binder;
 
 public abstract class BaseMetaObjectProtocolLinkStrategy extends AbstractMetaObjectProtocolLinkStrategy {
-
+    
     @Override
     public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {

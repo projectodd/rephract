@@ -5,8 +5,6 @@ import java.util.Arrays;
 public class LangFunction {
 
     public Object call(LangContext context, Object self, Object... args) {
-        
-        System.err.println( "langfn: call: " + Arrays.asList( args ) );
         if (context == null) {
             throw new IllegalArgumentException("context must be supplied");
         }

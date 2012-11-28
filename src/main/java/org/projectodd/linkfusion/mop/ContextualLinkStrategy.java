@@ -31,7 +31,7 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         return null;
     }
 
-    protected MethodHandle getContextAcquisitionFilter() throws NoSuchMethodException, IllegalAccessException {
+    protected MethodHandle contextAcquisitionFilter() throws NoSuchMethodException, IllegalAccessException {
         if (this.runtimeContextClass == null) {
             return MethodHandles.identity(Object.class);
         }
@@ -49,43 +49,49 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
          * [ object(receiver), string(name) ]
          * [ object(receiver), T(context) ] with name encoded in operation
          * [ object(receiver), T(context), string(name) ]
+         * 
+         * Should produce:
+         * 
+         * [ object(receiver), T(context), string(name) ]
          */
+        Object receiver = chain.getRequest().receiver();
 
         Binder binder = Binder.from(chain.getRequest().type());
         Binder guardBinder = Binder.from(chain.getRequest().type().changeReturnType(boolean.class));
 
         Object[] args = chain.getRequest().arguments();
+        String propName = op.getParameter();
 
         if (args.length == 1) {
-            binder = binder.insert(1, (Object) null);
-            binder = binder.filter(1, getContextAcquisitionFilter());
-            binder.insert(2, op.getParameter());
+            // no name, no context
+            binder = insertContext(binder);
+            binder = insertName(binder, propName);
 
-            guardBinder = guardBinder.insert(1, (Object) null);
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
-            guardBinder.insert(2, op.getParameter());
+            guardBinder = insertContext(guardBinder);
+            guardBinder = insertName(guardBinder, propName);
         } else if (args.length == 2) {
-            if (args[1] instanceof String) {
-                binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
-                binder = binder.filter(1, getContextAcquisitionFilter());
-
-                guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
-                guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            if (propName == null) {
+                // name, no context
+                propName = (String) args[1];
+                binder = insertContext(binder);
+                guardBinder = insertContext(guardBinder);
+            } else {
+                // context, no name
+                binder = insertName(binder, propName);
+                guardBinder = insertName(guardBinder, propName);
             }
         } else if (args.length == 3) {
-            binder = binder.filter(1, getContextAcquisitionFilter());
-
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            // name and context
+            binder = filterContext(binder);
+            guardBinder = filterContext(guardBinder);
         }
 
-        Object receiver = chain.getRequest().receiver();
-        String propName = op.getParameter();
-        if (propName == null) {
-            propName = chain.getRequest().arguments()[1].toString();
-        }
+        binder = binder.convert( Object.class, Object.class, getRuntimeContextClass(), String.class );
+        guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), String.class );
+        
         return linkGetProperty(chain, receiver, propName, binder, guardBinder);
     }
-    
+
     @Override
     protected StrategicLink linkGetMethod(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
 
@@ -96,40 +102,47 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
          * [ object(receiver), string(name) ]
          * [ object(receiver), T(context) ] with name encoded in operation
          * [ object(receiver), T(context), string(name) ]
+         * 
+         * Should produce:
+         * 
+         * [ object(receiver), T(context), string(name)
          */
+
+        Object receiver = chain.getRequest().receiver();
 
         Binder binder = Binder.from(chain.getRequest().type());
         Binder guardBinder = Binder.from(chain.getRequest().type().changeReturnType(boolean.class));
 
         Object[] args = chain.getRequest().arguments();
+        String propName = op.getParameter();
 
         if (args.length == 1) {
-            binder = binder.insert(1, (Object) null);
-            binder = binder.filter(1, getContextAcquisitionFilter());
-            binder.insert(2, op.getParameter());
+            // no name, no context
+            binder = insertContext(binder);
+            binder = insertName(binder, propName);
 
-            guardBinder = guardBinder.insert(1, (Object) null);
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
-            guardBinder.insert(2, op.getParameter());
+            guardBinder = insertContext(guardBinder);
+            guardBinder = insertName(guardBinder, propName);
         } else if (args.length == 2) {
-            if (args[1] instanceof String) {
-                binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
-                binder = binder.filter(1, getContextAcquisitionFilter());
-
-                guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
-                guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            if (propName == null) {
+                // name, no context
+                propName = (String) args[1];
+                binder = insertContext(binder);
+                guardBinder = insertContext(guardBinder);
+            } else {
+                // context, no name
+                binder = insertName(binder, propName);
+                guardBinder = insertName(guardBinder, propName);
             }
         } else if (args.length == 3) {
-            binder = binder.filter(1, getContextAcquisitionFilter());
-
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            // name and context
+            binder = filterContext(binder);
+            guardBinder = filterContext(guardBinder);
         }
 
-        Object receiver = chain.getRequest().receiver();
-        String propName = op.getParameter();
-        if (propName == null) {
-            propName = chain.getRequest().arguments()[1].toString();
-        }
+        binder = binder.convert( Object.class, Object.class, getRuntimeContextClass(), String.class );
+        guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), String.class );
+        
         return linkGetMethod(chain, receiver, propName, binder, guardBinder);
     }
 
@@ -157,31 +170,32 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         String propName = op.getParameter();
 
         if (args.length == 2) {
-            binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
-            binder = binder.filter(1, getContextAcquisitionFilter());
-            binder = binder.insert(2, op.getParameter());
-
-            guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
-            guardBinder = guardBinder.insert(2, op.getParameter());
+            // no context, no name
+            binder = insertContext(binder);
+            binder = insertName( binder, propName );
+            guardBinder = insertContext(guardBinder);
+            guardBinder = insertName( guardBinder, propName );
         } else if (args.length == 3) {
             if (propName == null) {
+                // name, no context
                 propName = (String) args[1];
-                binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
-                binder = binder.filter(1, getContextAcquisitionFilter());
-
-                guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
-                guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+                binder = insertContext(binder);
+                guardBinder = insertContext(guardBinder);
             } else {
-                binder = binder.insert(2, op.getParameter());
-                guardBinder = guardBinder.insert(2, op.getParameter());
+                // context, no name
+                binder = insertName(binder, propName);
+                guardBinder = insertName(guardBinder, propName);
             }
         } else if (args.length == 4) {
+            // name and context
             propName = (String) args[2];
 
-            binder = binder.filter(1, getContextAcquisitionFilter());
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            binder = filterContext(binder);
+            guardBinder = filterContext(guardBinder);
         }
+        
+        binder = binder.convert( void.class, Object.class, getRuntimeContextClass(), String.class, Object.class );
+        guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), String.class, Object.class );
 
         return linkSetProperty(chain, receiver, propName, value, binder, guardBinder);
     }
@@ -193,6 +207,10 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
          * 
          * [ object(receiver) object(self) object[](args)
          * [ object(receiver) ?(context) object(self) object[](args)
+         * 
+         * Should result in:
+         * 
+         * [ object(receiver) T(context) object(self) object[](args)
          */
 
         Binder binder = Binder.from(chain.getRequest().type());
@@ -205,21 +223,23 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         Object[] callArgs = (Object[]) args[args.length - 1];
 
         if (args.length == 3) {
+            // no context
             self = args[1];
-            binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
-            binder = binder.filter(1, getContextAcquisitionFilter());
-
-            guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            binder = insertContext(binder);
+            guardBinder = insertContext(guardBinder);
         } else if (args.length == 4) {
+            // context
             self = args[2];
-            binder = binder.filter(1, getContextAcquisitionFilter());
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            binder = filterContext(binder);
+            guardBinder = filterContext(guardBinder);
         }
         
+        binder = binder.convert( Object.class, Object.class, getRuntimeContextClass(), Object.class, Object[].class );
+        guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), Object.class, Object[].class );
+
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
     }
-    
+
     @Override
     protected StrategicLink linkConstruct(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException {
         /*
@@ -236,18 +256,18 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         Object receiver = args[0];
 
         Object[] callArgs = (Object[]) args[args.length - 1];
-        
+
         if (args.length == 2) {
             binder = binder.insert(1, new Class[] { Object.class }, (Object) null);
-            binder = binder.filter(1, getContextAcquisitionFilter());
+            binder = binder.filter(1, contextAcquisitionFilter());
 
             guardBinder = guardBinder.insert(1, new Class[] { Object.class }, (Object) null);
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            guardBinder = guardBinder.filter(1, contextAcquisitionFilter());
         } else if (args.length == 3) {
-            binder = binder.filter(1, getContextAcquisitionFilter());
-            guardBinder = guardBinder.filter(1, getContextAcquisitionFilter());
+            binder = binder.filter(1, contextAcquisitionFilter());
+            guardBinder = guardBinder.filter(1, contextAcquisitionFilter());
         }
-        
+
         return linkConstruct(chain, receiver, callArgs, binder, guardBinder);
     }
 
@@ -260,6 +280,18 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
                 .insert(4, expectedName)
                 .insert(5, expectedValueClass)
                 .invokeStatic(lookup(), Guards.class, "receiverClassAndNameAndValueClassGuard");
+    }
+
+    private Binder filterContext(Binder binder) throws NoSuchMethodException, IllegalAccessException {
+        return binder.filter(1, contextAcquisitionFilter());
+    }
+    
+    private Binder insertContext(Binder binder) throws NoSuchMethodException, IllegalAccessException {
+        return filterContext( binder.insert(1, new Class[] { Object.class }, (Object) null) );
+    }
+
+    private Binder insertName(Binder binder, String name) {
+        return binder.insert(2, name);
     }
 
 }

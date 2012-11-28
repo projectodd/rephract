@@ -48,7 +48,7 @@ public class JavaLinkStrategy extends NonContextualLinkStrategy {
         MethodHandle method = binder.drop(1)
                 .convert(Object.class, receiver.getClass())
                 .invoke(writer);
-
+        
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
     }
 
@@ -57,7 +57,7 @@ public class JavaLinkStrategy extends NonContextualLinkStrategy {
             IllegalAccessException {
         ClassManager classManager = getClassManager(receiver.getClass());
         DynamicMethod dynamicMethod = classManager.getMethod(methodName);
-
+        
         if (dynamicMethod == null) {
             return chain.nextStrategy();
         }
@@ -116,18 +116,14 @@ public class JavaLinkStrategy extends NonContextualLinkStrategy {
                 return chain.nextStrategy();
             }
 
-            System.err.println("CTOR: " + ctor);
-
             Class<?>[] spreadTypes = new Class<?>[args.length];
             for (int i = 0; i < spreadTypes.length; ++i) {
                 spreadTypes[i] = Object.class;
             }
 
-            System.err.println("_---_");
-            ctor = binder.printType()
+            ctor = binder
                     .drop(0)
                     .spread(spreadTypes)
-                    .printType()
                     .invoke(ctor);
 
             MethodHandle guard = getConstructGuard(javaClass, args, guardBinder);
