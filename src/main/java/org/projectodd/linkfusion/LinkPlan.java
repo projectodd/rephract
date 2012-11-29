@@ -121,21 +121,13 @@ class LinkPlan {
         return this.lookup;
     }
     
-    private Class<?>[] upcastParams(Class<?>[] params) {
-        Class<?>[] casted = new Class<?>[ params.length ];
-        for ( int i = 0 ; i < casted.length ; ++i ) {
-            casted[i] = Object.class;
-        }
-        return casted;
-    }
-
     public void replan(StrategicLink link) throws NoSuchMethodException, IllegalAccessException {
         if (link != null) {
             this.links.add(link);
         }
 
         MethodHandle relink = Binder.from(this.type)
-                .convert( this.type.returnType(), upcastParams( this.type.parameterArray() ) )
+                .convert( this.type.erase() )
                 .collect(0, Object[].class)
                 .convert(Object.class, Object[].class)
                 .insert(0, linker)
