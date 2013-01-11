@@ -5,6 +5,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -23,14 +24,14 @@ public class AbstractResolver {
     public Class<?> getTargetClass() {
         return this.targetClass;
     }
-
+    
     protected void analyzeMethod(Method method) {
         Lookup lookup = MethodHandles.lookup();
 
         String name = method.getName();
         DynamicMethod dynamicMethod = this.methods.get(name);
         if (dynamicMethod == null) {
-            dynamicMethod = new DynamicMethod(name);
+            dynamicMethod = new DynamicMethod(name, Modifier.isStatic( method.getModifiers() ));
             this.methods.put(name, dynamicMethod);
         }
 
@@ -45,7 +46,7 @@ public class AbstractResolver {
 
                     DynamicMethod writer = this.propertyWriters.get(name);
                     if (writer == null) {
-                        writer = new DynamicMethod(name);
+                        writer = new DynamicMethod(name, Modifier.isStatic( method.getModifiers() ));
                         this.propertyWriters.put(name, writer);
                     }
                     writer.addMethodHandle(unreflectedMethod);
@@ -67,7 +68,7 @@ public class AbstractResolver {
         try {
             DynamicMethod writer = propertyWriters.get(name);
             if (writer == null) {
-                writer = new DynamicMethod(name);
+                writer = new DynamicMethod(name, Modifier.isStatic(field.getModifiers()));
                 this.propertyWriters.put(name, writer);
             }
             writer.addMethodHandle(lookup.unreflectSetter(field));

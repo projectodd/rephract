@@ -8,11 +8,11 @@ public class InstanceResolver extends AbstractResolver {
     
     public InstanceResolver(Class<?> target) {
         super( target );
-        analyze();
+        analyze( target );
     }
-
-    private void analyze() {
-        Method[] methods = getTargetClass().getMethods();
+    
+    private void analyze(Class<?> cls) {
+        Method[] methods = cls.getMethods();
 
         for (int i = 0; i < methods.length; ++i) {
             int modifiers = methods[i].getModifiers();
@@ -22,7 +22,7 @@ public class InstanceResolver extends AbstractResolver {
             }
         }
 
-        Field[] fields = getTargetClass().getFields();
+        Field[] fields = cls.getFields();
 
         for (int i = 0; i < fields.length; ++i) {
             int modifiers = fields[i].getModifiers();
@@ -30,6 +30,15 @@ public class InstanceResolver extends AbstractResolver {
             if (Modifier.isPublic(modifiers) && !Modifier.isStatic(modifiers)) {
                 analyzeField(fields[i]);
             }
+        }
+        
+        if ( cls.getSuperclass() != null ) {
+            analyze( cls.getSuperclass() );
+        }
+        
+        Class<?>[] interfaces = cls.getInterfaces();
+        for ( int i = 0 ; i < interfaces.length ; ++i ) {
+            analyze( interfaces[i] );
         }
     }
 }

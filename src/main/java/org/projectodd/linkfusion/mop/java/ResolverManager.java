@@ -12,6 +12,10 @@ public class ResolverManager {
     }
     
     public Resolver getResolver(Class<?> targetClass) {
+        if ( targetClass == null ) {
+            return null;
+        }
+        
         Resolver resolver = resolvers.get( targetClass );
         if ( resolver == null ) {
             resolver = new Resolver( targetClass );

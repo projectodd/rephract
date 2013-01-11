@@ -12,21 +12,26 @@ public class ClassResolver extends AbstractResolver {
     private DynamicConstructor constructor = new DynamicConstructor();
 
     public ClassResolver(Class<?> target) {
-        super( target );
-        analyze();
+        super(target);
+        analyze(target, true);
     }
 
-    private void analyze() {
+    private void analyze(Class<?> cls, boolean topLevel) {
+        if (!Modifier.isPublic(cls.getModifiers())) {
+            return;
+        }
+
         Lookup lookup = MethodHandles.lookup();
-        this.constructor = new DynamicConstructor();
 
-        Constructor<?>[] constructors = getTargetClass().getConstructors();
+        if (topLevel) {
+            this.constructor = new DynamicConstructor();
+            Constructor<?>[] constructors = cls.getConstructors();
 
-        for (int i = 0; i < constructors.length; ++i) {
-            try {
-                this.constructor.addConstructorHandle(lookup.unreflectConstructor(constructors[i]));
-            } catch (IllegalAccessException e) {
-                // ignore
+            for (int i = 0; i < constructors.length; ++i) {
+                try {
+                    this.constructor.addConstructorHandle(lookup.unreflectConstructor(constructors[i]));
+                } catch (IllegalAccessException e) {
+                }
             }
         }
 
@@ -49,8 +54,17 @@ public class ClassResolver extends AbstractResolver {
                 analyzeField(fields[i]);
             }
         }
+
+        if (cls.getSuperclass() != null) {
+            analyze(cls.getSuperclass(), false);
+        }
+
+        Class<?>[] interfaces = cls.getInterfaces();
+        for (int i = 0; i < interfaces.length; ++i) {
+            analyze(interfaces[i], false);
+        }
     }
-    
+
     public DynamicConstructor getConstructor() {
         return this.constructor;
     }

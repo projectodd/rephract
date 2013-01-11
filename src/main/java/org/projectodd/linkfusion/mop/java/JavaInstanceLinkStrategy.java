@@ -1,6 +1,7 @@
 package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
+import java.util.Arrays;
 
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -13,20 +14,21 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
     private ResolverManager manager;
 
     public JavaInstanceLinkStrategy() {
-        this( new ResolverManager() );
+        this(new ResolverManager());
     }
-    
+
     public JavaInstanceLinkStrategy(ResolverManager manager) {
         this.manager = manager;
     }
 
     @Override
-    public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException, IllegalAccessException {
-        
-        Resolver resolver = getResolver( receiver.getClass() );
+    public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
+            IllegalAccessException {
+
+        Resolver resolver = getResolver(receiver.getClass());
 
         MethodHandle reader = resolver.getInstanceResolver().getPropertyReader(propName);
-        
+
         if (reader == null) {
             return chain.nextStrategy();
         }
@@ -37,13 +39,13 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
 
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
     }
-    
+
     @Override
     public StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
-            
-        Resolver resolver =  getResolver( receiver.getClass() );
-        
+
+        Resolver resolver = getResolver(receiver.getClass());
+
         DynamicMethod dynamicMethod = resolver.getInstanceResolver().getMethod(methodName);
 
         if (dynamicMethod == null) {
@@ -55,8 +57,8 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
                 .identity();
 
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), methodName, guardBinder));
-    } 
-    
+    }
+
     @Override
     public StrategicLink linkSetProperty(StrategyChain chain, Object receiver, String propName, Object value, Binder binder, Binder guardBinder)
             throws NoSuchMethodException, IllegalAccessException {
@@ -67,10 +69,10 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
         if (dynamicWriter == null) {
             return chain.nextStrategy();
         }
-        
-        MethodHandle method = dynamicWriter.findMethodHandle(new Object[] { value } );
-        
-        if ( method == null ) {
+
+        MethodHandle method = dynamicWriter.findMethodHandle(new Object[] { value });
+
+        if (method == null) {
             return chain.nextStrategy();
         }
 
@@ -81,14 +83,12 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
     }
 
-
-
     @Override
     public StrategicLink linkCall(StrategyChain chain, Object receiver, Object self, Object[] args, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
-        if (receiver instanceof DynamicMethod) {
+        if (receiver instanceof DynamicMethod && !((DynamicMethod) receiver).isStatic()) {
             DynamicMethod dynamicMethod = (DynamicMethod) receiver;
-            
+
             MethodHandle method = dynamicMethod.findMethodHandle(args);
 
             if (method == null) {

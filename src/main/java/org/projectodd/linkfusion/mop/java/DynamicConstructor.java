@@ -2,6 +2,7 @@ package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DynamicConstructor extends AbstractDynamicMember {
