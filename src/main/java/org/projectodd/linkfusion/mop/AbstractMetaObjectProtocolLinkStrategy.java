@@ -6,7 +6,6 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.util.List;
 
 import org.projectodd.linkfusion.InvocationRequest;
-import org.projectodd.linkfusion.LinkStrategy;
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -21,7 +20,7 @@ public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObje
 
         if (request.isFusionRequest()) {
             List<Operation> ops = request.getOperations();
-
+            
             StrategicLink link = null;
 
             for (Operation each : ops) {

@@ -17,11 +17,11 @@ public class DynamicMethod extends AbstractDynamicMember {
         return this.name;
     }
 
-    public void addMethod(MethodHandle method) {
+    public void addMethodHandle(MethodHandle method) {
         this.methods.add(method);
     }
 
-    public MethodHandle findMethod(Object[] args) {
+    public MethodHandle findMethodHandle(Object[] args) {
         for (MethodHandle each : methods) {
             if ((each.type().parameterCount() - 1) == args.length) {
                 if (parametersMatch(getPureParameterArray( each ) , args)) {

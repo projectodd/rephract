@@ -1,12 +1,12 @@
 package org.projectodd.linkfusion.mop;
 
+import static org.fest.assertions.Assertions.*;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.projectodd.linkfusion.mop.java.DynamicMethod;
-import org.projectodd.linkfusion.mop.java.JavaLinkStrategy;
+import org.projectodd.linkfusion.mop.java.JavaInstanceLinkStrategy;
 import org.projectodd.linkfusion.mop.java.Person;
-
-import static org.fest.assertions.Assertions.assertThat;
 
 public class MetaObjectProtocolHandlerTest {
 
@@ -18,7 +18,7 @@ public class MetaObjectProtocolHandlerTest {
     public void setUp() throws Throwable {
         this.handler = new MetaObjectProtocolHandler();
         this.handler.addLinkStrategy(new MockContextualLinkStrategy());
-        this.handler.addLinkStrategy(new JavaLinkStrategy());
+        this.handler.addLinkStrategy(new JavaInstanceLinkStrategy());
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);

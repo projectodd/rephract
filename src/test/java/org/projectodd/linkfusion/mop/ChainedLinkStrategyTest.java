@@ -1,6 +1,6 @@
 package org.projectodd.linkfusion.mop;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Assertions.*;
 
 import java.lang.invoke.CallSite;
 
@@ -10,7 +10,7 @@ import org.projectodd.linkfusion.FusionLinker;
 import org.projectodd.linkfusion.mop.MockFrontLinkStrategy.WrappedObject;
 import org.projectodd.linkfusion.mop.java.Cheese;
 import org.projectodd.linkfusion.mop.java.DynamicMethod;
-import org.projectodd.linkfusion.mop.java.JavaLinkStrategy;
+import org.projectodd.linkfusion.mop.java.JavaInstanceLinkStrategy;
 import org.projectodd.linkfusion.mop.java.Person;
 
 public class ChainedLinkStrategyTest {
@@ -21,7 +21,7 @@ public class ChainedLinkStrategyTest {
     public void setUp() {
         this.linker = new FusionLinker();
         this.linker.addLinkStrategy(new MockFrontLinkStrategy());
-        this.linker.addLinkStrategy(new JavaLinkStrategy());
+        this.linker.addLinkStrategy(new JavaInstanceLinkStrategy());
     }
 
     @Test

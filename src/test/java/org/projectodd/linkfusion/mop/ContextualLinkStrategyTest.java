@@ -1,10 +1,8 @@
 package org.projectodd.linkfusion.mop;
 
-import static org.fest.assertions.Assertions.assertThat;
+import static org.fest.assertions.Assertions.*;
 
 import java.lang.invoke.CallSite;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;

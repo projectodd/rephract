@@ -1,6 +1,5 @@
 package org.projectodd.linkfusion.mop;
 
-import java.util.Arrays;
 
 public class LangFunction {
 

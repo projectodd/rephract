@@ -19,5 +19,9 @@ class OperationImpl implements Operation {
     public String getParameter() {
         return this.parameter;
     }
+    
+    public String toString() {
+        return type + ":" + this.parameter;
+    }
 
 }

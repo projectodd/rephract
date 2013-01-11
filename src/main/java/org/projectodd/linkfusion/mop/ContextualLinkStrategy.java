@@ -82,6 +82,7 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
             }
         } else if (args.length == 3) {
             // name and context
+            propName = (String) args[2];
             binder = filterContext(binder);
             guardBinder = filterContext(guardBinder);
         }
@@ -138,6 +139,7 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
             // name and context
             binder = filterContext(binder);
             guardBinder = filterContext(guardBinder);
+            propName = (String) args[2];
         }
 
         binder = binder.convert( Object.class, Object.class, getRuntimeContextClass(), String.class );

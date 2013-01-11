@@ -4,7 +4,6 @@ import java.lang.invoke.MethodHandle;
 
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
-import org.projectodd.linkfusion.mop.ContextualLinkStrategy;
 
 import com.headius.invokebinder.Binder;
 

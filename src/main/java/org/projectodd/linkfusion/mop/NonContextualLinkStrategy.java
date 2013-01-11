@@ -1,7 +1,5 @@
 package org.projectodd.linkfusion.mop;
 
-import java.util.Arrays;
-
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;

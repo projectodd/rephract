@@ -11,11 +11,11 @@ public class DynamicConstructor extends AbstractDynamicMember {
     public DynamicConstructor() {
     }
 
-    public void addConstructor(MethodHandle method) {
+    public void addConstructorHandle(MethodHandle method) {
         this.constructors.add(method);
     }
 
-    public MethodHandle findConstructor(Object[] args) {
+    public MethodHandle findConstructorHandle(Object[] args) {
         for (MethodHandle each : this.constructors) {
             if ((each.type().parameterCount()) == args.length) {
                 if (parametersMatch(each.type().parameterArray(), args)) {
