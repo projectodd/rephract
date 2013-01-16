@@ -28,7 +28,6 @@ public class DynamicMethod extends AbstractDynamicMember {
     }
 
     public MethodHandle findMethodHandle(Object[] args) {
-        System.err.println( "find for: " + this.name + " in " + this.methods );
         for (MethodHandle each : methods) {
             if (isStatic) {
                 if ((each.type().parameterCount()) == args.length) {
@@ -37,7 +36,6 @@ public class DynamicMethod extends AbstractDynamicMember {
                     }
                 }
             } else {
-                System.err.println( "each: " + each );
                 if ((each.type().parameterCount() - 1) == args.length) {
                     if (parametersMatch(getPureParameterArray(each), args)) {
                         return each;

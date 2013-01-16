@@ -7,7 +7,7 @@ public class TypeComparisons {
             return true;
         }
 
-        if (target == Integer.TYPE && objClass == Integer.class) {
+        if (target == Integer.TYPE && objClass == Integer.class ) {
             return true;
         }
 

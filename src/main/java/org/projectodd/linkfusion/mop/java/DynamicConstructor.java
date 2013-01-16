@@ -2,7 +2,6 @@ package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class DynamicConstructor extends AbstractDynamicMember {
@@ -16,16 +15,25 @@ public class DynamicConstructor extends AbstractDynamicMember {
         this.constructors.add(method);
     }
 
-    public MethodHandle findConstructorHandle(Object[] args) {
+    public InvocationPlan findConstructorInvocationPlan(Object[] args) {
+        CoercionMatrix matrix = CoercionMatrix.getInstance();
         for (MethodHandle each : this.constructors) {
             if ((each.type().parameterCount()) == args.length) {
-                if (parametersMatch(each.type().parameterArray(), args)) {
-                    return each;
+                Class<?>[] paramTypes = each.type().parameterArray();
+                MethodHandle[] filters = new MethodHandle[paramTypes.length];
+                for (int i = 0; i < paramTypes.length; ++i) {
+                    if (matrix.isCompatible(paramTypes[i], args[i].getClass())) {
+                        filters[i] = matrix.getFilter(paramTypes[i], args[i].getClass());
+                    } else {
+                        return null;
+                    }
                 }
+                return new InvocationPlan(each, filters);
             }
         }
-
         return null;
+
     }
+
 
 }

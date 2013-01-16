@@ -103,9 +103,12 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
 
         DynamicConstructor dynamicCtor = resolver.getClassResolver().getConstructor();
 
-        MethodHandle ctor = dynamicCtor.findConstructorHandle(args);
-        
-        if (ctor == null) {
+        // MethodHandle ctor = dynamicCtor.findConstructorHandle(args);
+        InvocationPlan plan = dynamicCtor.findConstructorInvocationPlan(args);
+
+        //System.err.println("PLAN: " + plan);
+
+        if (plan == null) {
             return chain.nextStrategy();
         }
 
@@ -114,10 +117,13 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
             spreadTypes[i] = Object.class;
         }
 
-        ctor = binder
+        //System.err.println("FILTERS: " + Arrays.asList(plan.getFilters()));
+
+        MethodHandle ctor = binder
                 .drop(0)
                 .spread(spreadTypes)
-                .invoke(ctor);
+                .filter(0, plan.getFilters())
+                .invoke(plan.getMethodHandle());
 
         MethodHandle guard = getConstructGuard((Class<?>) receiver, args, guardBinder);
 
@@ -142,10 +148,10 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
                 spreadTypes[i] = Object.class;
             }
 
-            System.err.println( "METHOD: " + method );
+            System.err.println("METHOD: " + method);
             method = binder
                     .printType()
-                    .drop(0,2)
+                    .drop(0, 2)
                     .printType()
                     .spread(spreadTypes)
                     .printType()
