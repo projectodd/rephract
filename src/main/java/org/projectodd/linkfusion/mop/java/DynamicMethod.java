@@ -27,24 +27,23 @@ public class DynamicMethod extends AbstractDynamicMember {
     public void addMethodHandle(MethodHandle method) {
         this.methods.add(method);
     }
-
-    public MethodHandle findMethodHandle(Object[] args) {
-        for (MethodHandle each : methods) {
-            if (isStatic) {
-                if ((each.type().parameterCount()) == args.length) {
-                    if (parametersMatch(getPureParameterArray(each), args)) {
-                        return each;
+    
+    public InvocationPlan findMethodInvoationPlan(Object[] args) {
+        CoercionMatrix matrix = getCoercionMatrix();
+        loop: for (MethodHandle each : this.methods) {
+            Class<?>[] paramTypes = getPureParameterArray(each );
+            if (paramTypes.length == args.length) {
+                MethodHandle[] filters = new MethodHandle[paramTypes.length];
+                for (int i = 0; i < paramTypes.length; ++i) {
+                    if (matrix.isCompatible(paramTypes[i], args[i].getClass())) {
+                        filters[i] = matrix.getFilter(paramTypes[i], args[i].getClass());
+                    } else {
+                        continue loop;
                     }
                 }
-            } else {
-                if ((each.type().parameterCount() - 1) == args.length) {
-                    if (parametersMatch(getPureParameterArray(each), args)) {
-                        return each;
-                    }
-                }
+                return new InvocationPlan(each, filters);
             }
         }
-
         return null;
     }
 

@@ -1,9 +1,6 @@
 package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -61,11 +58,15 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
             return chain.nextStrategy();
         }
 
-        MethodHandle method = writer.findMethodHandle(new Object[] { value });
+        InvocationPlan plan = writer.findMethodInvoationPlan(new Object[] { value });
+        if (plan == null) {
+            return chain.nextStrategy();
+        }
 
-        method = binder.drop(1)
+        MethodHandle method = binder.drop(1)
                 .convert(Object.class, receiver.getClass())
-                .invoke(method);
+                .filter(1, plan.getFilters())
+                .invoke(plan.getMethodHandle());
 
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
     }
@@ -102,13 +103,13 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
         Resolver resolver = getResolver((Class<?>) receiver);
 
         DynamicConstructor dynamicCtor = resolver.getClassResolver().getConstructor();
-        
-        //System.err.println( "dynamic ctor: " + dynamicCtor );
+
+        // System.err.println( "dynamic ctor: " + dynamicCtor );
 
         // MethodHandle ctor = dynamicCtor.findConstructorHandle(args);
         InvocationPlan plan = dynamicCtor.findConstructorInvocationPlan(args);
-        
-        //System.err.println("PLAN: " + plan);
+
+        // System.err.println("PLAN: " + plan);
 
         if (plan == null) {
             return chain.nextStrategy();
@@ -119,7 +120,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
             spreadTypes[i] = Object.class;
         }
 
-        //System.err.println("FILTERS: " + Arrays.asList(plan.getFilters()));
+        // System.err.println("FILTERS: " + Arrays.asList(plan.getFilters()));
 
         MethodHandle ctor = binder
                 .drop(0)
@@ -139,9 +140,9 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
         if (receiver instanceof DynamicMethod && ((DynamicMethod) receiver).isStatic()) {
             DynamicMethod dynamicMethod = (DynamicMethod) receiver;
 
-            MethodHandle method = dynamicMethod.findMethodHandle(args);
+            InvocationPlan plan = dynamicMethod.findMethodInvoationPlan(args);
 
-            if (method == null) {
+            if (plan == null) {
                 return chain.nextStrategy();
             }
 
@@ -150,10 +151,11 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
                 spreadTypes[i] = Object.class;
             }
 
-            method = binder
+            MethodHandle method = binder
                     .drop(0, 2)
                     .spread(spreadTypes)
-                    .invoke(method);
+                    .filter(0, plan.getFilters() )
+                    .invoke(plan.getMethodHandle());
 
             MethodHandle guard = getCallGuard(receiver, args, guardBinder);
 

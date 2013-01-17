@@ -70,15 +70,18 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             return chain.nextStrategy();
         }
 
-        MethodHandle method = dynamicWriter.findMethodHandle(new Object[] { value });
+        //MethodHandle method = dynamicWriter.findMethodHandle(new Object[] { value });
+        InvocationPlan plan = dynamicWriter.findMethodInvoationPlan(new Object[] { value } );
 
-        if (method == null) {
+        if (plan == null) {
             return chain.nextStrategy();
         }
+        
 
-        method = binder.drop(1)
-                .convert(Object.class, receiver.getClass())
-                .invoke(method);
+        MethodHandle method = binder
+                .drop(1)
+                .filter(1, plan.getFilters())
+                .invoke(plan.getMethodHandle());
 
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
     }
@@ -89,9 +92,10 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
         if (receiver instanceof DynamicMethod && !((DynamicMethod) receiver).isStatic()) {
             DynamicMethod dynamicMethod = (DynamicMethod) receiver;
 
-            MethodHandle method = dynamicMethod.findMethodHandle(args);
+            //MethodHandle method = dynamicMethod.findMethodHandle(args);
+            InvocationPlan plan = dynamicMethod.findMethodInvoationPlan( args );
 
-            if (method == null) {
+            if (plan == null) {
                 return chain.nextStrategy();
             }
 
@@ -100,9 +104,10 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
                 spreadTypes[i] = Object.class;
             }
 
-            method = binder.drop(0)
+            MethodHandle method = binder.drop(0)
                     .spread(spreadTypes)
-                    .invoke(method);
+                    .filter(1, plan.getFilters())
+                    .invoke(plan.getMethodHandle());
 
             MethodHandle guard = getCallGuard(receiver, args, guardBinder);
 

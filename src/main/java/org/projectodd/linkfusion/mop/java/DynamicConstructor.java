@@ -33,7 +33,6 @@ public class DynamicConstructor extends AbstractDynamicMember {
             }
         }
         return null;
-
     }
 
 }
