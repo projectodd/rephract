@@ -17,7 +17,7 @@ public class DynamicConstructor extends AbstractDynamicMember {
 
     public InvocationPlan findConstructorInvocationPlan(Object[] args) {
         CoercionMatrix matrix = CoercionMatrix.getInstance();
-        for (MethodHandle each : this.constructors) {
+        loop: for (MethodHandle each : this.constructors) {
             if ((each.type().parameterCount()) == args.length) {
                 Class<?>[] paramTypes = each.type().parameterArray();
                 MethodHandle[] filters = new MethodHandle[paramTypes.length];
@@ -25,7 +25,7 @@ public class DynamicConstructor extends AbstractDynamicMember {
                     if (matrix.isCompatible(paramTypes[i], args[i].getClass())) {
                         filters[i] = matrix.getFilter(paramTypes[i], args[i].getClass());
                     } else {
-                        return null;
+                        continue loop;
                     }
                 }
                 return new InvocationPlan(each, filters);
@@ -34,6 +34,5 @@ public class DynamicConstructor extends AbstractDynamicMember {
         return null;
 
     }
-
 
 }
