@@ -11,18 +11,24 @@ import java.util.Map;
 
 public class AbstractResolver {
 
+    private CoercionMatrix coercionMatrix;
     private Class<?> targetClass;
 
     private Map<String, MethodHandle> propertyReaders = new HashMap<>();
     private Map<String, DynamicMethod> propertyWriters = new HashMap<>();
     private Map<String, DynamicMethod> methods = new HashMap<>();
 
-    public AbstractResolver(Class<?> targetClass) {
+    public AbstractResolver(CoercionMatrix coercionMatrix, Class<?> targetClass) {
+        this.coercionMatrix = coercionMatrix;
         this.targetClass = targetClass;
     }
 
     public Class<?> getTargetClass() {
         return this.targetClass;
+    }
+    
+    public CoercionMatrix getCoercionMatrix() {
+        return this.coercionMatrix;
     }
     
     protected void analyzeMethod(Method method) {
@@ -31,7 +37,7 @@ public class AbstractResolver {
         String name = method.getName();
         DynamicMethod dynamicMethod = this.methods.get(name);
         if (dynamicMethod == null) {
-            dynamicMethod = new DynamicMethod(name, Modifier.isStatic( method.getModifiers() ));
+            dynamicMethod = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic( method.getModifiers() ));
             this.methods.put(name, dynamicMethod);
         }
 
@@ -46,7 +52,7 @@ public class AbstractResolver {
 
                     DynamicMethod writer = this.propertyWriters.get(name);
                     if (writer == null) {
-                        writer = new DynamicMethod(name, Modifier.isStatic( method.getModifiers() ));
+                        writer = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic( method.getModifiers() ));
                         this.propertyWriters.put(name, writer);
                     }
                     writer.addMethodHandle(unreflectedMethod);
@@ -68,7 +74,7 @@ public class AbstractResolver {
         try {
             DynamicMethod writer = propertyWriters.get(name);
             if (writer == null) {
-                writer = new DynamicMethod(name, Modifier.isStatic(field.getModifiers()));
+                writer = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic(field.getModifiers()));
                 this.propertyWriters.put(name, writer);
             }
             writer.addMethodHandle(lookup.unreflectSetter(field));

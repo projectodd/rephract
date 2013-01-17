@@ -9,10 +9,11 @@ import java.lang.reflect.Modifier;
 
 public class ClassResolver extends AbstractResolver {
 
-    private DynamicConstructor constructor = new DynamicConstructor();
+    private DynamicConstructor constructor;
 
-    public ClassResolver(Class<?> target) {
-        super(target);
+    public ClassResolver(CoercionMatrix coercionMatrix, Class<?> target) {
+        super(coercionMatrix, target);
+        this.constructor = new DynamicConstructor(coercionMatrix);
         analyze(target, true);
     }
 
@@ -24,7 +25,7 @@ public class ClassResolver extends AbstractResolver {
         Lookup lookup = MethodHandles.lookup();
 
         if (topLevel) {
-            this.constructor = new DynamicConstructor();
+            this.constructor = new DynamicConstructor( getCoercionMatrix() );
             Constructor<?>[] constructors = cls.getConstructors();
 
             for (int i = 0; i < constructors.length; ++i) {

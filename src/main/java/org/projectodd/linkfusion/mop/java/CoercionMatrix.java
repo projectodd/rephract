@@ -10,25 +10,24 @@ import static java.lang.invoke.MethodType.*;
 
 public class CoercionMatrix {
     
-    private static CoercionMatrix INSTANCE;
-    
-    static {
-        try {
-            INSTANCE = new CoercionMatrix();
-        } catch (NoSuchMethodException | IllegalAccessException e) {
-            e.printStackTrace();
-        }
-    }
-    
-    public static CoercionMatrix getInstance() {
-        return INSTANCE;
-    }
-    
     private Map<Class<?>,Map<Class<?>,MethodHandle>> matrix = new HashMap<>();
     
     public CoercionMatrix() throws NoSuchMethodException, IllegalAccessException {
         matrix.put( Integer.class, integerCoercions() );
         matrix.put( int.class, primitiveIntegerCoercions() );
+        matrix.put( Long.class, longCoercions() );
+        matrix.put( long.class, primitiveLongCoercions() );
+    }
+    
+    protected void addCoercion(Class<?> toType, Class<?> fromType, MethodHandle filter) {
+        Map<Class<?>, MethodHandle> row = this.matrix.get(toType);
+        
+        if ( row == null ) {
+            row = new HashMap<>();
+            this.matrix.put( toType, row );
+        }
+        
+        row.put( fromType, filter );
     }
     
     public boolean isCompatible(Class<?> target, Class<?> actual) {
@@ -63,7 +62,10 @@ public class CoercionMatrix {
         Map<Class<?>, MethodHandle> coercions = new HashMap<>();
         coercions.put( int.class, MethodHandles.identity(int.class) );
         coercions.put( Integer.class, MethodHandles.identity(Integer.class) );
-        coercions.put( Long.class, lookup.findStatic(CoercionMatrix.class, "longToInteger", methodType( Integer.class, Long.class ) ) );
+        coercions.put( Long.class, lookup.findStatic(CoercionMatrix.class, "numberToInteger", methodType( Integer.class, Number.class ) ) );
+        coercions.put( Short.class, lookup.findStatic(CoercionMatrix.class, "numberToInteger", methodType( Integer.class, Number.class ) ) );
+        coercions.put( Float.class, lookup.findStatic(CoercionMatrix.class, "numberToInteger", methodType( Integer.class, Number.class ) ) );
+        coercions.put( Double.class, lookup.findStatic(CoercionMatrix.class, "numberToInteger", methodType( Integer.class, Number.class ) ) );
         return coercions;
     }
     
@@ -73,18 +75,79 @@ public class CoercionMatrix {
         Map<Class<?>, MethodHandle> coercions = new HashMap<>();
         coercions.put( int.class, MethodHandles.identity(int.class) );
         coercions.put( Integer.class, MethodHandles.identity(int.class) );
-        coercions.put( Long.class, lookup.findStatic(CoercionMatrix.class, "longToPrimitiveInteger", methodType( int.class, Long.class ) ) );
+        coercions.put( Short.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveInteger", methodType( int.class, Number.class ) ) );
+        coercions.put( Long.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveInteger", methodType( int.class, Number.class ) ) );
+        coercions.put( Double.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveInteger", methodType( int.class, Number.class ) ) );
+        coercions.put( Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveInteger", methodType( int.class, Number.class ) ) );
+        return coercions;
+    }
+    
+    private Map<Class<?>, MethodHandle> longCoercions() throws NoSuchMethodException, IllegalAccessException {
+        Lookup lookup = MethodHandles.lookup();
+        
+        Map<Class<?>, MethodHandle> coercions = new HashMap<>();
+        coercions.put( long.class, MethodHandles.identity(long.class) );
+        coercions.put( Long.class, MethodHandles.identity(Long.class) );
+        coercions.put( Short.class, lookup.findStatic(CoercionMatrix.class, "numberToLong", methodType( Long.class, Number.class ) ) );
+        coercions.put( Integer.class, lookup.findStatic(CoercionMatrix.class, "numberToLong", methodType( Long.class, Number.class ) ) );
+        coercions.put( Float.class, lookup.findStatic(CoercionMatrix.class, "numberToLong", methodType( Long.class, Number.class ) ) );
+        coercions.put( Double.class, lookup.findStatic(CoercionMatrix.class, "numberToLong", methodType( Long.class, Number.class ) ) );
+        return coercions;
+    }
+    
+    private Map<Class<?>, MethodHandle> primitiveLongCoercions() throws NoSuchMethodException, IllegalAccessException {
+        Lookup lookup = MethodHandles.lookup();
+        
+        Map<Class<?>, MethodHandle> coercions = new HashMap<>();
+        coercions.put( long.class, MethodHandles.identity(long.class) );
+        coercions.put( Long.class, MethodHandles.identity(Long.class) );
+        coercions.put( Short.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
+        coercions.put( Integer.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
+        coercions.put( Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
+        coercions.put( Double.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
         return coercions;
     }
     
     // -------------------------------------------------
     
-    public static Integer longToInteger(Long value) {
+    public static Integer numberToInteger(Number value) {
         return value.intValue();
     }
     
-    public static int longToPrimitiveInteger(Long value) {
+    public static int numberToPrimitiveInteger(Number value) {
         return value.intValue();
+    }
+    
+    public static Long numberToLong(Number value) {
+        return value.longValue();
+    }
+    
+    public static long numberToPrimitiveLong(Number value) {
+        return value.longValue();
+    }
+    
+    public static Short numberToShort(Number value) {
+        return value.shortValue();
+    }
+    
+    public static short numberToPrimitiveShort(Number value) {
+        return value.shortValue();
+    }
+    
+    public static Double numberToDouble(Number value) {
+        return value.doubleValue();
+    }
+    
+    public static double numberToDoublePrimitiveDouble(Number value) {
+        return value.doubleValue();
+    }
+    
+    public static Float numberToFloat(Number value) {
+        return value.floatValue();
+    }
+    
+    public static float numberToPrimitiveFloat(Number value) {
+        return value.floatValue();
     }
     
     

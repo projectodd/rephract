@@ -5,9 +5,9 @@ public class Resolver {
     private ClassResolver classResolver;
     private InstanceResolver instanceResolver;
 
-    public Resolver(Class<?> targetClass) {
-        this.classResolver = new ClassResolver( targetClass );
-        this.instanceResolver = new InstanceResolver( targetClass );
+    public Resolver(CoercionMatrix coercionMatrix, Class<?> targetClass) {
+        this.classResolver = new ClassResolver( coercionMatrix, targetClass );
+        this.instanceResolver = new InstanceResolver( coercionMatrix, targetClass );
     }
     
     public ClassResolver getClassResolver() {

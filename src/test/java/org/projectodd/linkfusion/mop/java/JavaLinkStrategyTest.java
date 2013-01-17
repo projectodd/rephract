@@ -13,7 +13,7 @@ public class JavaLinkStrategyTest {
     private FusionLinker linker;
 
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchMethodException, IllegalAccessException {
         this.linker = new FusionLinker();
         ResolverManager manager = new ResolverManager();
         this.linker.addLinkStrategy(new JavaClassLinkStrategy( manager ));

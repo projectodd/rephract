@@ -15,7 +15,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
 
     private ResolverManager manager;
 
-    public JavaClassLinkStrategy() {
+    public JavaClassLinkStrategy() throws NoSuchMethodException, IllegalAccessException {
         this(new ResolverManager());
     }
 

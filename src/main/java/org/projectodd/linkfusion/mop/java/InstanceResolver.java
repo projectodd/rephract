@@ -6,8 +6,8 @@ import java.lang.reflect.Modifier;
 
 public class InstanceResolver extends AbstractResolver {
     
-    public InstanceResolver(Class<?> target) {
-        super( target );
+    public InstanceResolver(CoercionMatrix coercionMatrix, Class<?> target) {
+        super( coercionMatrix, target );
         analyze( target );
     }
     

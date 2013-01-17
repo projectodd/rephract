@@ -18,7 +18,7 @@ public class ChainedLinkStrategyTest {
     private FusionLinker linker;
 
     @Before
-    public void setUp() {
+    public void setUp() throws NoSuchMethodException, IllegalAccessException {
         this.linker = new FusionLinker();
         this.linker.addLinkStrategy(new MockFrontLinkStrategy());
         this.linker.addLinkStrategy(new JavaInstanceLinkStrategy());

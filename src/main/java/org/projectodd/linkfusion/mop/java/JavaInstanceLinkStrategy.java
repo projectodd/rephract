@@ -13,7 +13,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
 
     private ResolverManager manager;
 
-    public JavaInstanceLinkStrategy() {
+    public JavaInstanceLinkStrategy() throws NoSuchMethodException, IllegalAccessException {
         this(new ResolverManager());
     }
 

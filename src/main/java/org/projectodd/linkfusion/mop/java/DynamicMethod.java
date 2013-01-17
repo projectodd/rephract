@@ -10,7 +10,8 @@ public class DynamicMethod extends AbstractDynamicMember {
     private List<MethodHandle> methods = new ArrayList<MethodHandle>();
     private boolean isStatic;
 
-    public DynamicMethod(String name, boolean isStatic) {
+    public DynamicMethod(CoercionMatrix coercionMatrix, String name, boolean isStatic) {
+        super( coercionMatrix );
         this.name = name;
         this.isStatic = isStatic;
     }

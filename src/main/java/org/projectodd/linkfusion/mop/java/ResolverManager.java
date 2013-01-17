@@ -5,10 +5,15 @@ import java.util.Map;
 
 public class ResolverManager {
     
+    private CoercionMatrix coercionMatrix;
     private Map<Class<?>, Resolver> resolvers = new HashMap<>();
     
-    public ResolverManager() {
-        
+    public ResolverManager() throws NoSuchMethodException, IllegalAccessException {
+        this.coercionMatrix = new CoercionMatrix();
+    }
+    
+    public ResolverManager(CoercionMatrix coercionMatrix) {
+        this.coercionMatrix = coercionMatrix;
     }
     
     public Resolver getResolver(Class<?> targetClass) {
@@ -18,7 +23,7 @@ public class ResolverManager {
         
         Resolver resolver = resolvers.get( targetClass );
         if ( resolver == null ) {
-            resolver = new Resolver( targetClass );
+            resolver = new Resolver( this.coercionMatrix, targetClass );
             this.resolvers.put( targetClass, resolver );
         }
         return resolver;

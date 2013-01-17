@@ -8,7 +8,8 @@ public class DynamicConstructor extends AbstractDynamicMember {
 
     private List<MethodHandle> constructors = new ArrayList<MethodHandle>();
 
-    public DynamicConstructor() {
+    public DynamicConstructor(CoercionMatrix coercionMatrix) {
+        super( coercionMatrix );
     }
 
     public void addConstructorHandle(MethodHandle method) {
@@ -16,7 +17,7 @@ public class DynamicConstructor extends AbstractDynamicMember {
     }
 
     public InvocationPlan findConstructorInvocationPlan(Object[] args) {
-        CoercionMatrix matrix = CoercionMatrix.getInstance();
+        CoercionMatrix matrix = getCoercionMatrix();
         loop: for (MethodHandle each : this.constructors) {
             if ((each.type().parameterCount()) == args.length) {
                 Class<?>[] paramTypes = each.type().parameterArray();
