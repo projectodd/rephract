@@ -16,6 +16,7 @@ public class Guards {
 
     
     public static boolean receiverClassAndNameGuard(Object receiver, String name, Class<?> expectedReceiver, String expectedName) {
+        //System.err.println( "guard (" + receiver +"," + name +") vs expected (" + expectedReceiver + "," + expectedName +")" );
         return ( expectedReceiver.isAssignableFrom(receiver.getClass()) && ( expectedName.equals( name ) ) );
     }
     

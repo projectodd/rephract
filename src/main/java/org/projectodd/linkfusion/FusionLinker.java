@@ -7,6 +7,7 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.lang.invoke.MethodType;
 import java.lang.invoke.MutableCallSite;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.headius.invokebinder.Binder;
@@ -51,7 +52,7 @@ public class FusionLinker {
         StrategicLink link = chain.linkCurrent();
 
         if (link == null) {
-            throw new NoSuchMethodError( plan.getName() );
+            throw new NoSuchMethodError( plan.getName() + ": " + Arrays.asList( args ) );
         }
         
         plan.replan(link);
