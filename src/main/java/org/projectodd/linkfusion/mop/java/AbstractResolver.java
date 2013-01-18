@@ -68,7 +68,7 @@ public class AbstractResolver {
 
     protected void analyzeField(Field field) {
         Lookup lookup = MethodHandles.lookup();
-
+        
         String name = field.getName();
 
         try {
