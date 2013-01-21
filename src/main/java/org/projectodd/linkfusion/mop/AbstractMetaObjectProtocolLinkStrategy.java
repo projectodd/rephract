@@ -6,6 +6,8 @@ import java.lang.invoke.MethodHandles.Lookup;
 import java.util.List;
 
 import org.projectodd.linkfusion.InvocationRequest;
+import org.projectodd.linkfusion.LinkLogger;
+import org.projectodd.linkfusion.NullLinkLogger;
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -15,15 +17,31 @@ import com.headius.invokebinder.Binder;
 
 public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObjectProtocolLinkStrategy {
 
+    private LinkLogger logger;
+
+    public AbstractMetaObjectProtocolLinkStrategy(LinkLogger logger) {
+        this.logger = logger;
+    }
+
+    public AbstractMetaObjectProtocolLinkStrategy() {
+        this.logger = new NullLinkLogger();
+    }
+
+    public void log(String message) {
+        this.logger.log(getClass().getSimpleName() + ": " + message);
+    }
+
     @Override
     public StrategicLink link(InvocationRequest request, StrategyChain chain) throws NoSuchMethodException, IllegalAccessException {
 
         if (request.isFusionRequest()) {
+            log(">>>> START REQUEST");
             List<Operation> ops = request.getOperations();
-            
+
             StrategicLink link = null;
 
             for (Operation each : ops) {
+                log("Attempt: " + each);
                 switch (each.getType()) {
                 case GET_PROPERTY:
                     link = linkGetProperty(chain, each);
@@ -43,23 +61,29 @@ public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObje
                 }
 
                 if (link != null) {
-                    return link;
+                    break;
                 }
             }
-        }
+            log("<<< END REQUEST: " + ( link != null ) );
 
+            return link;
+        }
         return null;
     }
 
     abstract protected StrategicLink linkGetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+
     abstract protected StrategicLink linkSetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+
     abstract protected StrategicLink linkGetMethod(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+
     abstract protected StrategicLink linkCall(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
+
     abstract protected StrategicLink linkConstruct(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;
 
     // ----------------------------------------
     // ----------------------------------------
-    
+
     public static MethodHandle getReceiverClassGuard(Class<?> expectedReceiverClass, Binder binder) throws NoSuchMethodException, IllegalAccessException {
         return binder
                 .drop(1, binder.type().parameterCount() - 1)

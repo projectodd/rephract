@@ -1,5 +1,6 @@
 package org.projectodd.linkfusion.mop;
 
+import org.projectodd.linkfusion.LinkLogger;
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -9,6 +10,10 @@ import com.headius.invokebinder.Binder;
 public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLinkStrategy {
 
     public NonContextualLinkStrategy() {
+    }
+    
+    public NonContextualLinkStrategy(LinkLogger logger) {
+        super( logger );
     }
 
     protected StrategicLink linkGetProperty(StrategyChain chain, Operation op) throws NoSuchMethodException, IllegalAccessException {
@@ -50,7 +55,8 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
             binder = dropContext(binder);
             guardBinder = dropContext(guardBinder);
         }
-
+        
+        log( "[GET_PROPERTY] receiver=" + receiver + "; propName=" + propName );
         return linkGetProperty(chain, receiver, propName, binder, guardBinder);
     }
 
@@ -102,6 +108,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
         binder = binder.convert(Object.class, Object.class, String.class, Object.class);
         guardBinder = guardBinder.convert(boolean.class, Object.class, String.class, Object.class);
 
+        log( "[SET_PROPERTY] receiver=" + receiver + "; propName=" + propName );
         return linkSetProperty(chain, receiver, propName, value, binder, guardBinder);
     }
 
@@ -152,6 +159,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
         binder = binder.convert(Object.class, Object.class, String.class);
         guardBinder = guardBinder.convert(boolean.class, Object.class, String.class);
 
+        log( "[GET_METHOD] receiver=" + receiver + "; propName=" + propName );
         return linkGetMethod(chain, receiver, propName, binder, guardBinder);
     }
 
@@ -189,6 +197,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
             callArgs = (Object[]) args[3];
         }
 
+        log( "[CALL] receiver=" + receiver );
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
     }
 
@@ -217,6 +226,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
             callArgs = (Object[]) args[2];
         }
 
+        log( "[CONSTRUCT] receiver=" + receiver );
         return linkConstruct(chain, receiver, callArgs, binder, guardBinder);
     }
     

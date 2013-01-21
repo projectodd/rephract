@@ -3,6 +3,7 @@ package org.projectodd.linkfusion.mop;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 
+import org.projectodd.linkfusion.LinkLogger;
 import org.projectodd.linkfusion.Operation;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
@@ -15,6 +16,11 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
     private Class<T> runtimeContextClass;
 
     public ContextualLinkStrategy(Class<T> runtimeContextClass) {
+        this.runtimeContextClass = runtimeContextClass;
+    }
+    
+    public ContextualLinkStrategy(Class<T> runtimeContextClass, LinkLogger logger) {
+        super( logger );
         this.runtimeContextClass = runtimeContextClass;
     }
 
@@ -90,6 +96,8 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         binder = binder.convert( Object.class, Object.class, getRuntimeContextClass(), String.class );
         guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), String.class );
         
+        log( "[GET_PROPERTY] receiver=" + receiver + "; propName=" + propName );
+        
         return linkGetProperty(chain, receiver, propName, binder, guardBinder);
     }
 
@@ -145,6 +153,7 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         binder = binder.convert( Object.class, Object.class, getRuntimeContextClass(), String.class );
         guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), String.class );
         
+        log( "[GET_METHOD] receiver=" + receiver + "; propName=" + propName );
         return linkGetMethod(chain, receiver, propName, binder, guardBinder);
     }
 
@@ -199,6 +208,7 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         binder = binder.convert( void.class, Object.class, getRuntimeContextClass(), String.class, Object.class );
         guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), String.class, Object.class );
 
+        log( "[SET_PROPERTY] receiver=" + receiver + "; propName=" + propName );
         return linkSetProperty(chain, receiver, propName, value, binder, guardBinder);
     }
 
@@ -239,6 +249,7 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
         binder = binder.convert( Object.class, Object.class, getRuntimeContextClass(), Object.class, Object[].class );
         guardBinder = guardBinder.convert( boolean.class, Object.class, getRuntimeContextClass(), Object.class, Object[].class );
 
+        log( "[CALL] receiver=" + receiver );
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
     }
 
@@ -270,6 +281,7 @@ public abstract class ContextualLinkStrategy<T> extends BaseMetaObjectProtocolLi
             guardBinder = guardBinder.filter(1, contextAcquisitionFilter());
         }
 
+        log( "[CONSTRUCT] receiver=" + receiver );
         return linkConstruct(chain, receiver, callArgs, binder, guardBinder);
     }
 
