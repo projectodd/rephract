@@ -3,7 +3,6 @@ package org.projectodd.linkfusion.mop;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.util.List;
 
 import org.projectodd.linkfusion.InvocationRequest;
 import org.projectodd.linkfusion.LinkLogger;
@@ -28,47 +27,35 @@ public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObje
     }
 
     public void log(String message) {
-        this.logger.log(getClass().getSimpleName() + ": " + message);
+        this.logger.log(Thread.currentThread().getName() + ": " + getClass().getSimpleName() + ": " + message);
     }
 
     @Override
     public StrategicLink link(InvocationRequest request, StrategyChain chain) throws NoSuchMethodException, IllegalAccessException {
+        StrategicLink link = null;
 
         if (request.isFusionRequest()) {
-            log(">>>> START REQUEST");
-            List<Operation> ops = request.getOperations();
-
-            StrategicLink link = null;
-
-            for (Operation each : ops) {
-                log("Attempt: " + each);
-                switch (each.getType()) {
-                case GET_PROPERTY:
-                    link = linkGetProperty(chain, each);
-                    break;
-                case SET_PROPERTY:
-                    link = linkSetProperty(chain, each);
-                    break;
-                case GET_METHOD:
-                    link = linkGetMethod(chain, each);
-                    break;
-                case CALL:
-                    link = linkCall(chain, each);
-                    break;
-                case CONSTRUCT:
-                    link = linkConstruct(chain, each);
-                    break;
-                }
-
-                if (link != null) {
-                    break;
-                }
+            Operation op = request.getOperation();
+            switch (op.getType()) {
+            case GET_PROPERTY:
+                link = linkGetProperty(chain, op);
+                break;
+            case SET_PROPERTY:
+                link = linkSetProperty(chain, op);
+                break;
+            case GET_METHOD:
+                link = linkGetMethod(chain, op);
+                break;
+            case CALL:
+                link = linkCall(chain, op);
+                break;
+            case CONSTRUCT:
+                link = linkConstruct(chain, op);
+                break;
             }
-            log("<<< END REQUEST: " + ( link != null ) );
 
-            return link;
         }
-        return null;
+        return link;
     }
 
     abstract protected StrategicLink linkGetProperty(StrategyChain chain, Operation each) throws NoSuchMethodException, IllegalAccessException;

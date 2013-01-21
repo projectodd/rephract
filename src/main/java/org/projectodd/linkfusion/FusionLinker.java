@@ -15,9 +15,15 @@ import com.headius.invokebinder.Binder;
 public class FusionLinker {
 
     private List<LinkStrategy> linkStrategies = new ArrayList<>();
+    private LinkLogger logger;
 
     public FusionLinker() {
+        this(new NullLinkLogger());
 
+    }
+
+    public FusionLinker(LinkLogger logger) {
+        this.logger = logger;
     }
 
     public void addLinkStrategy(LinkStrategy strategy) {
@@ -40,23 +46,31 @@ public class FusionLinker {
     public CallSite bootstrap(String name, MethodType type) throws Throwable {
         return bootstrap(MethodHandles.lookup(), name, type);
     }
-    
-    public CallSite bootstrap(String name, Class<?> returnType, Class<?>...paramTypes) throws Throwable {
-        return bootstrap( name, MethodType.methodType(returnType, paramTypes ) );
+
+    public CallSite bootstrap(String name, Class<?> returnType, Class<?>... paramTypes) throws Throwable {
+        return bootstrap(name, MethodType.methodType(returnType, paramTypes));
     }
 
     public Object linkInvocation(LinkPlan plan, Object[] args) throws Throwable {
-        InvocationRequestImpl request = new InvocationRequestImpl(plan, args );
-        StrategyChainImpl chain = new StrategyChainImpl(request, this.linkStrategies);
 
-        StrategicLink link = chain.linkCurrent();
+        List<Operation> operations = plan.getOperations();
+
+        StrategicLink link = null;
+        for (Operation each : operations) {
+            InvocationRequestImpl request = new InvocationRequestImpl(plan, each, args);
+            StrategyChainImpl chain = new StrategyChainImpl(this.logger, request, this.linkStrategies);
+            link = chain.linkCurrent();
+            if ( link != null ) {
+                break;
+            }
+        }
 
         if (link == null) {
-            throw new NoSuchMethodError( plan.getName() + ": " + Arrays.asList( args ) );
+            throw new NoSuchMethodError(plan.getName() + ": " + Arrays.asList(args));
         }
-        
+
         plan.replan(link);
-        
+
         return link.getTarget().invokeWithArguments(args);
     }
 

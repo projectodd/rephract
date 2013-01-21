@@ -6,7 +6,7 @@ import java.util.List;
 public interface InvocationRequest {
     
     boolean isFusionRequest();
-    List<Operation> getOperations();
+    Operation getOperation();
     
     String getName();
     MethodType type();

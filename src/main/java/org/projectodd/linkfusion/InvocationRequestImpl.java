@@ -8,18 +8,20 @@ class InvocationRequestImpl implements InvocationRequest {
     
     private LinkPlan plan;
     private Object[] arguments;
+    private Operation operation;
 
-    InvocationRequestImpl(LinkPlan plan, Object[] arguments) {
+    InvocationRequestImpl(LinkPlan plan, Operation operation, Object[] arguments) {
         this.plan = plan;
         this.arguments = arguments;
+        this.operation = operation;
     }
     
     public boolean isFusionRequest() {
         return this.plan.isFusionRequest();
     }
     
-    public List<Operation> getOperations() {
-        return this.plan.getOperations();
+    public Operation getOperation() {
+        return this.operation;
     }
 
     @Override
