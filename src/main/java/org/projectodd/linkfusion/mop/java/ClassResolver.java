@@ -25,7 +25,7 @@ public class ClassResolver extends AbstractResolver {
         Lookup lookup = MethodHandles.lookup();
 
         if (topLevel) {
-            this.constructor = new DynamicConstructor( getCoercionMatrix() );
+            this.constructor = new DynamicConstructor(getCoercionMatrix());
             Constructor<?>[] constructors = cls.getConstructors();
 
             for (int i = 0; i < constructors.length; ++i) {

@@ -2,6 +2,8 @@ package org.projectodd.linkfusion.mop.java;
 
 import java.lang.invoke.MethodHandle;
 
+import org.projectodd.linkfusion.LinkLogger;
+import org.projectodd.linkfusion.NullLinkLogger;
 import org.projectodd.linkfusion.StrategicLink;
 import org.projectodd.linkfusion.StrategyChain;
 import org.projectodd.linkfusion.mop.NonContextualLinkStrategy;
@@ -15,14 +17,21 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
     public JavaClassLinkStrategy() throws NoSuchMethodException, IllegalAccessException {
         this(new ResolverManager());
     }
-
+    
     public JavaClassLinkStrategy(ResolverManager manager) {
+        this( new NullLinkLogger(), manager );
+    }
+    
+    public JavaClassLinkStrategy(LinkLogger logger, ResolverManager manager) {
+        super( logger );
         this.manager = manager;
     }
 
     @Override
     public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
+        
+        log( "receiver: " + receiver + " // " + propName );
 
         if (!(receiver instanceof Class)) {
             return chain.nextStrategy();
@@ -30,6 +39,8 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
 
         Resolver resolver = getResolver((Class<?>) receiver);
         MethodHandle reader = resolver.getClassResolver().getPropertyReader(propName);
+        
+        log( "reader: " + reader );
 
         if (reader == null) {
             return chain.nextStrategy();

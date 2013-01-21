@@ -26,18 +26,18 @@ public class AbstractResolver {
     public Class<?> getTargetClass() {
         return this.targetClass;
     }
-    
+
     public CoercionMatrix getCoercionMatrix() {
         return this.coercionMatrix;
     }
-    
+
     protected void analyzeMethod(Method method) {
         Lookup lookup = MethodHandles.lookup();
 
         String name = method.getName();
         DynamicMethod dynamicMethod = this.methods.get(name);
         if (dynamicMethod == null) {
-            dynamicMethod = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic( method.getModifiers() ));
+            dynamicMethod = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic(method.getModifiers()));
             this.methods.put(name, dynamicMethod);
         }
 
@@ -52,7 +52,7 @@ public class AbstractResolver {
 
                     DynamicMethod writer = this.propertyWriters.get(name);
                     if (writer == null) {
-                        writer = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic( method.getModifiers() ));
+                        writer = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic(method.getModifiers()));
                         this.propertyWriters.put(name, writer);
                     }
                     writer.addMethodHandle(unreflectedMethod);
@@ -68,7 +68,7 @@ public class AbstractResolver {
 
     protected void analyzeField(Field field) {
         Lookup lookup = MethodHandles.lookup();
-        
+
         String name = field.getName();
 
         try {
@@ -77,9 +77,12 @@ public class AbstractResolver {
                 writer = new DynamicMethod(getCoercionMatrix(), name, Modifier.isStatic(field.getModifiers()));
                 this.propertyWriters.put(name, writer);
             }
-            writer.addMethodHandle(lookup.unreflectSetter(field));
+            if (!Modifier.isFinal(field.getModifiers())) {
+                writer.addMethodHandle(lookup.unreflectSetter(field));
+            }
             this.propertyReaders.put(name, lookup.unreflectGetter(field));
         } catch (IllegalAccessException e) {
+            e.printStackTrace();
             // ignore
         }
     }
@@ -89,7 +92,7 @@ public class AbstractResolver {
         if (name.length() == 4) {
             propName = name.substring(3).toLowerCase();
         } else {
-            propName = name.substring(3,4).toLowerCase() + name.substring(4);
+            propName = name.substring(3, 4).toLowerCase() + name.substring(4);
         }
         return propName;
     }
