@@ -53,7 +53,12 @@ public class CoercionMatrix {
             return MethodHandles.identity( target );
         }
         
-        return row.get(actual);
+        MethodHandle filter = row.get(actual);
+        if ( filter != null ) {
+            return filter;
+        }
+        
+        return MethodHandles.identity(target);
     }
 
     private Map<Class<?>, MethodHandle> integerCoercions() throws NoSuchMethodException, IllegalAccessException {
