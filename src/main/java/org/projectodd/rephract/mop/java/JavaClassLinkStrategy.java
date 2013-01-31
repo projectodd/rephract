@@ -17,21 +17,21 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
     public JavaClassLinkStrategy() throws NoSuchMethodException, IllegalAccessException {
         this(new ResolverManager());
     }
-    
+
     public JavaClassLinkStrategy(ResolverManager manager) {
-        this( new NullLinkLogger(), manager );
+        this(new NullLinkLogger(), manager);
     }
-    
+
     public JavaClassLinkStrategy(LinkLogger logger, ResolverManager manager) {
-        super( logger );
+        super(logger);
         this.manager = manager;
     }
 
     @Override
     public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
-        
-        log( "receiver: " + receiver + " // " + propName );
+
+        log("receiver: " + receiver + " // " + propName);
 
         if (!(receiver instanceof Class)) {
             return chain.nextStrategy();
@@ -39,8 +39,8 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
 
         Resolver resolver = getResolver((Class<?>) receiver);
         MethodHandle reader = resolver.getClassResolver().getPropertyReader(propName);
-        
-        log( "reader: " + reader );
+
+        log("reader: " + reader);
 
         if (reader == null) {
             return chain.nextStrategy();
@@ -86,14 +86,17 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
     public StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
 
-        if (!(receiver instanceof Class)) {
-            return chain.nextStrategy();
+        Resolver resolver = null;
+        
+        if (receiver instanceof Class) {
+            resolver = getResolver((Class<?>) receiver);
+        } else {
+            resolver = getResolver((Class<?>) receiver.getClass() );
         }
-
-        Resolver resolver = getResolver((Class<?>) receiver);
+        
         DynamicMethod dynamicMethod = resolver.getClassResolver().getMethod(methodName);
-
-        if (dynamicMethod == null) {
+        
+        if ( dynamicMethod == null ) {
             return chain.nextStrategy();
         }
 
@@ -165,7 +168,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
             MethodHandle method = binder
                     .drop(0, 2)
                     .spread(spreadTypes)
-                    .filter(0, plan.getFilters() )
+                    .filter(0, plan.getFilters())
                     .invoke(plan.getMethodHandle());
 
             MethodHandle guard = getCallGuard(receiver, args, guardBinder);

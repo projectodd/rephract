@@ -43,7 +43,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
     @Override
     public StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
-
+    	
         Resolver resolver = getResolver(receiver.getClass());
 
         DynamicMethod dynamicMethod = resolver.getInstanceResolver().getMethod(methodName);
