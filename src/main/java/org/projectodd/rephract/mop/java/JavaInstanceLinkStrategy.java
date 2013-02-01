@@ -1,6 +1,8 @@
 package org.projectodd.rephract.mop.java;
 
 import java.lang.invoke.MethodHandle;
+import java.util.Arrays;
+import java.util.Map;
 
 import org.projectodd.rephract.StrategicLink;
 import org.projectodd.rephract.StrategyChain;
@@ -28,21 +30,32 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
 
         MethodHandle reader = resolver.getInstanceResolver().getPropertyReader(propName);
 
-        if (reader == null) {
+        if (reader != null) {
+            MethodHandle method = binder.drop(1)
+                    .convert(Object.class, receiver.getClass())
+                    .invoke(reader);
+
+            return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
+        }
+
+        DynamicMethod get = resolver.getInstanceResolver().getMethod("get");
+        InvocationPlan plan = get.findMethodInvoationPlan(new Object[] { propName });
+
+        if (plan == null) {
             return chain.nextStrategy();
         }
 
-        MethodHandle method = binder.drop(1)
-                .convert(Object.class, receiver.getClass())
-                .invoke(reader);
-
+        MethodHandle method = binder
+                .convert(Object.class, Object.class, Object.class)
+                .invoke(plan.getMethodHandle());
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
+
     }
 
     @Override
     public StrategicLink linkGetMethod(StrategyChain chain, Object receiver, String methodName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
-    	
+
         Resolver resolver = getResolver(receiver.getClass());
 
         DynamicMethod dynamicMethod = resolver.getInstanceResolver().getMethod(methodName);
@@ -65,22 +78,30 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
         Resolver resolver = getResolver(receiver.getClass());
         DynamicMethod dynamicWriter = resolver.getInstanceResolver().getPropertyWriter(propName);
 
-        if (dynamicWriter == null) {
-            return chain.nextStrategy();
+        if (dynamicWriter != null) {
+            InvocationPlan plan = dynamicWriter.findMethodInvoationPlan(new Object[] { value });
+
+            if (plan != null) {
+                MethodHandle method = binder
+                        .drop(1)
+                        .filter(1, plan.getFilters())
+                        .invoke(plan.getMethodHandle());
+
+                return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
+            }
         }
 
-        //MethodHandle method = dynamicWriter.findMethodHandle(new Object[] { value });
-        InvocationPlan plan = dynamicWriter.findMethodInvoationPlan(new Object[] { value } );
+        DynamicMethod put = resolver.getInstanceResolver().getMethod("put");
+
+        InvocationPlan plan = put.findMethodInvoationPlan(new Object[] { propName, value });
 
         if (plan == null) {
             return chain.nextStrategy();
         }
-        
 
         MethodHandle method = binder
-                .drop(1)
-                .filter(1, plan.getFilters())
-                .invoke(plan.getMethodHandle());
+                .convert(void.class, Object.class, Object.class, Object.class)
+                .filter(1, plan.getFilters()).invoke(plan.getMethodHandle());
 
         return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
     }
@@ -91,8 +112,8 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
         if (receiver instanceof DynamicMethod && !((DynamicMethod) receiver).isStatic()) {
             DynamicMethod dynamicMethod = (DynamicMethod) receiver;
 
-            //MethodHandle method = dynamicMethod.findMethodHandle(args);
-            InvocationPlan plan = dynamicMethod.findMethodInvoationPlan( args );
+            // MethodHandle method = dynamicMethod.findMethodHandle(args);
+            InvocationPlan plan = dynamicMethod.findMethodInvoationPlan(args);
 
             if (plan == null) {
                 return chain.nextStrategy();
