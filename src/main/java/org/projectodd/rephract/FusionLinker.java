@@ -71,7 +71,8 @@ public class FusionLinker {
 
         plan.replan(link);
 
-        return link.getTarget().invokeWithArguments(args);
+        Object result = link.getTarget().invokeWithArguments(args);
+        return result;
     }
 
 }

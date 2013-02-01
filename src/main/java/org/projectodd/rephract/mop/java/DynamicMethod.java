@@ -61,5 +61,9 @@ public class DynamicMethod extends AbstractDynamicMember {
         }
 
     }
+    
+    public String toString() {
+        return "[DynamicMethod: name=" + this.name + "; isStatic=" + isStatic + "]";
+    }
 
 }

@@ -1,7 +1,6 @@
 package org.projectodd.rephract.mop.java;
 
 import java.lang.invoke.MethodHandle;
-import java.util.Arrays;
 
 import org.projectodd.rephract.StrategicLink;
 import org.projectodd.rephract.StrategyChain;
