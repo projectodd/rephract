@@ -17,6 +17,8 @@ public class CoercionMatrix {
         matrix.put( int.class, primitiveIntegerCoercions() );
         matrix.put( Long.class, longCoercions() );
         matrix.put( long.class, primitiveLongCoercions() );
+        matrix.put( Boolean.class, booleanCoercions() );
+        matrix.put( boolean.class, primitiveBooleanCoercions() );
     }
     
     protected void addCoercion(Class<?> toType, Class<?> fromType, MethodHandle filter) {
@@ -110,6 +112,22 @@ public class CoercionMatrix {
         coercions.put( Integer.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
         coercions.put( Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
         coercions.put( Double.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
+        return coercions;
+    }
+    
+    private Map<Class<?>, MethodHandle> booleanCoercions() throws NoSuchMethodException, IllegalAccessException {
+        Lookup lookup = MethodHandles.lookup();
+        Map<Class<?>, MethodHandle> coercions = new HashMap<>();
+        coercions.put( boolean.class, MethodHandles.identity(boolean.class) );
+        coercions.put( Boolean.class, MethodHandles.identity(Boolean.class) );
+        return coercions;
+    }
+    
+    private Map<Class<?>, MethodHandle> primitiveBooleanCoercions() throws NoSuchMethodException, IllegalAccessException {
+        Lookup lookup = MethodHandles.lookup();
+        Map<Class<?>, MethodHandle> coercions = new HashMap<>();
+        coercions.put( boolean.class, MethodHandles.identity(boolean.class) );
+        coercions.put( Boolean.class, MethodHandles.identity(boolean.class) );
         return coercions;
     }
     
