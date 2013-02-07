@@ -107,7 +107,7 @@ public class CoercionMatrix {
         
         Map<Class<?>, MethodHandle> coercions = new HashMap<>();
         coercions.put( long.class, MethodHandles.identity(long.class) );
-        coercions.put( Long.class, MethodHandles.identity(Long.class) );
+        coercions.put( Long.class, MethodHandles.identity(long.class) );
         coercions.put( Short.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
         coercions.put( Integer.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
         coercions.put( Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveLong", methodType( long.class, Number.class ) ) );
