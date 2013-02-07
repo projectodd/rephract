@@ -1,8 +1,6 @@
 package org.projectodd.rephract.mop.java;
 
 import java.lang.invoke.MethodHandle;
-import java.util.Arrays;
-import java.util.Map;
 
 import org.projectodd.rephract.StrategicLink;
 import org.projectodd.rephract.StrategyChain;
@@ -38,7 +36,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
         }
 
-        if (!propName.equals("get")) {
+        if (!propName.equals("get") && !propName.equals("put")) {
             DynamicMethod get = resolver.getInstanceResolver().getMethod("get");
             if (get == null) {
                 return chain.nextStrategy();
@@ -54,7 +52,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
                     .invoke(plan.getMethodHandle());
             return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
         }
-        
+
         return chain.nextStrategy();
 
     }
@@ -98,23 +96,27 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             }
         }
 
-        DynamicMethod put = resolver.getInstanceResolver().getMethod("put");
+        if (!propName.equals("put") && !propName.equals("get")) {
+            DynamicMethod put = resolver.getInstanceResolver().getMethod("put");
 
-        if (put == null) {
-            return chain.nextStrategy();
+            if (put == null) {
+                return chain.nextStrategy();
+            }
+
+            InvocationPlan plan = put.findMethodInvoationPlan(new Object[] { propName, value });
+
+            if (plan == null) {
+                return chain.nextStrategy();
+            }
+
+            MethodHandle method = binder
+                    .convert(void.class, Object.class, Object.class, Object.class)
+                    .filter(1, plan.getFilters()).invoke(plan.getMethodHandle());
+
+            return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
         }
 
-        InvocationPlan plan = put.findMethodInvoationPlan(new Object[] { propName, value });
-
-        if (plan == null) {
-            return chain.nextStrategy();
-        }
-
-        MethodHandle method = binder
-                .convert(void.class, Object.class, Object.class, Object.class)
-                .filter(1, plan.getFilters()).invoke(plan.getMethodHandle());
-
-        return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
+        return chain.nextStrategy();
     }
 
     @Override
@@ -124,6 +126,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             DynamicMethod dynamicMethod = (DynamicMethod) receiver;
 
             // MethodHandle method = dynamicMethod.findMethodHandle(args);
+
             InvocationPlan plan = dynamicMethod.findMethodInvoationPlan(args);
 
             if (plan == null) {

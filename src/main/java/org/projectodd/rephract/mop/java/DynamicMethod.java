@@ -2,6 +2,7 @@ package org.projectodd.rephract.mop.java;
 
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class DynamicMethod extends AbstractDynamicMember {
@@ -35,7 +36,7 @@ public class DynamicMethod extends AbstractDynamicMember {
             if (paramTypes.length == args.length) {
                 MethodHandle[] filters = new MethodHandle[paramTypes.length];
                 for (int i = 0; i < paramTypes.length; ++i) {
-                    if (matrix.isCompatible(paramTypes[i], args[i].getClass())) {
+                    if (args[i] == null || matrix.isCompatible(paramTypes[i], args[i].getClass())) {
                         filters[i] = matrix.getFilter(paramTypes[i], args[i].getClass());
                     } else {
                         continue loop;

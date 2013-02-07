@@ -33,7 +33,7 @@ public class CoercionMatrix {
     }
     
     public boolean isCompatible(Class<?> target, Class<?> actual) {
-        if ( target.isAssignableFrom( actual ) ) {
+        if ( actual == null || target.isAssignableFrom( actual ) ) {
             return true;
         }
         
