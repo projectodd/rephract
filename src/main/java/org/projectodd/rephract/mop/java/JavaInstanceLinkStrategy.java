@@ -36,7 +36,9 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
         }
 
-        if (!propName.equals("get") && !propName.equals("put")) {
+        DynamicMethod candidateMethod = resolver.getInstanceResolver().getMethod( propName );
+        
+        if ( candidateMethod == null ) {
             DynamicMethod get = resolver.getInstanceResolver().getMethod("get");
             if (get == null) {
                 return chain.nextStrategy();
@@ -96,7 +98,9 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             }
         }
 
-        if (!propName.equals("put") && !propName.equals("get")) {
+        DynamicMethod candidateMethod = resolver.getInstanceResolver().getMethod( propName );
+        
+        if ( candidateMethod == null ) {
             DynamicMethod put = resolver.getInstanceResolver().getMethod("put");
 
             if (put == null) {
@@ -124,8 +128,6 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             IllegalAccessException {
         if (receiver instanceof DynamicMethod && !((DynamicMethod) receiver).isStatic()) {
             DynamicMethod dynamicMethod = (DynamicMethod) receiver;
-
-            // MethodHandle method = dynamicMethod.findMethodHandle(args);
 
             InvocationPlan plan = dynamicMethod.findMethodInvoationPlan(args);
 
