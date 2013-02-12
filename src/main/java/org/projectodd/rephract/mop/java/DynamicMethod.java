@@ -12,7 +12,7 @@ public class DynamicMethod extends AbstractDynamicMember {
     private boolean isStatic;
 
     public DynamicMethod(CoercionMatrix coercionMatrix, String name, boolean isStatic) {
-        super( coercionMatrix );
+        super(coercionMatrix);
         this.name = name;
         this.isStatic = isStatic;
     }
@@ -24,26 +24,48 @@ public class DynamicMethod extends AbstractDynamicMember {
     public String getName() {
         return this.name;
     }
-    
+
     public void addMethodHandle(MethodHandle method) {
         this.methods.add(method);
     }
-    
+
     public InvocationPlan findMethodInvoationPlan(Object[] args) {
         CoercionMatrix matrix = getCoercionMatrix();
-        loop: for (MethodHandle each : this.methods) {
-            Class<?>[] paramTypes = getPureParameterArray(each );
+
+        int matchedIndex = -1;
+
+        int bestDistance = Integer.MAX_VALUE;
+
+        int numMethods = this.methods.size();
+        loop: for (int i = 0; i < numMethods; ++i) {
+            MethodHandle each = this.methods.get(i);
+            int methodDistance = 0;
+            Class<?>[] paramTypes = getPureParameterArray(each);
             if (paramTypes.length == args.length) {
-                MethodHandle[] filters = new MethodHandle[paramTypes.length];
-                for (int i = 0; i < paramTypes.length; ++i) {
-                    if (args[i] == null || matrix.isCompatible(paramTypes[i], args[i].getClass())) {
-                        filters[i] = matrix.getFilter(paramTypes[i], args[i].getClass());
-                    } else {
+                for (int j = 0; j < paramTypes.length; ++j) {
+                    int paramDistance = (args[j] == null ? 0 : matrix.isCompatible(paramTypes[j], args[j].getClass()));
+                    if (paramDistance < 0) {
                         continue loop;
                     }
+                    methodDistance += paramDistance;
                 }
-                return new InvocationPlan(each, filters);
+                if (methodDistance < bestDistance) {
+                    matchedIndex = i;
+                    bestDistance = methodDistance;
+                }
             }
+        }
+
+        if (matchedIndex >= 0) {
+            MethodHandle matchedMethod = this.methods.get(matchedIndex);
+            Class<?>[] paramTypes = getPureParameterArray(matchedMethod);
+            MethodHandle[] filters = new MethodHandle[paramTypes.length];
+
+            for (int j = 0; j < paramTypes.length; ++j) {
+                filters[j] = matrix.getFilter(paramTypes[j], args[j].getClass());
+            }
+            return new InvocationPlan(matchedMethod, filters);
+
         }
         return null;
     }
@@ -52,7 +74,7 @@ public class DynamicMethod extends AbstractDynamicMember {
         List<Class<?>> paramList = handle.type().parameterList();
 
         if (isStatic) {
-            return paramList.toArray( new Class<?>[ paramList.size()]);
+            return paramList.toArray(new Class<?>[paramList.size()]);
 
         } else {
             if (paramList.size() == 1) {
@@ -62,7 +84,7 @@ public class DynamicMethod extends AbstractDynamicMember {
         }
 
     }
-    
+
     public String toString() {
         return "[DynamicMethod: name=" + this.name + "; isStatic=" + isStatic + "]";
     }

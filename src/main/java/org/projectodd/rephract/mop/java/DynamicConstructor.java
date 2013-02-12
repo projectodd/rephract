@@ -18,19 +18,41 @@ public class DynamicConstructor extends AbstractDynamicMember {
 
     public InvocationPlan findConstructorInvocationPlan(Object[] args) {
         CoercionMatrix matrix = getCoercionMatrix();
-        loop: for (MethodHandle each : this.constructors) {
-            if ((each.type().parameterCount()) == args.length) {
-                Class<?>[] paramTypes = each.type().parameterArray();
-                MethodHandle[] filters = new MethodHandle[paramTypes.length];
-                for (int i = 0; i < paramTypes.length; ++i) {
-                    if (matrix.isCompatible(paramTypes[i], args[i].getClass())) {
-                        filters[i] = matrix.getFilter(paramTypes[i], args[i].getClass());
-                    } else {
+
+        int matchedIndex = -1;
+
+        int bestDistance = Integer.MAX_VALUE;
+
+        int numMethods = this.constructors.size();
+        loop: for (int i = 0; i < numMethods; ++i) {
+            MethodHandle each = this.constructors.get(i);
+            int methodDistance = 0;
+            Class<?>[] paramTypes = each.type().parameterArray();
+            if (paramTypes.length == args.length) {
+                for (int j = 0; j < paramTypes.length; ++j) {
+                    int paramDistance = (args[j] == null ? 0 : matrix.isCompatible(paramTypes[j], args[j].getClass()));
+                    if (paramDistance < 0) {
                         continue loop;
                     }
+                    methodDistance += paramDistance;
                 }
-                return new InvocationPlan(each, filters);
+                if (methodDistance < bestDistance) {
+                    matchedIndex = i;
+                    bestDistance = methodDistance;
+                }
             }
+        }
+
+        if (matchedIndex >= 0) {
+            MethodHandle matchedMethod = this.constructors.get(matchedIndex);
+            Class<?>[] paramTypes = matchedMethod.type().parameterArray();
+            MethodHandle[] filters = new MethodHandle[paramTypes.length];
+
+            for (int j = 0; j < paramTypes.length; ++j) {
+                filters[j] = matrix.getFilter(paramTypes[j], args[j].getClass());
+            }
+            return new InvocationPlan(matchedMethod, filters);
+
         }
         return null;
     }
