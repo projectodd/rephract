@@ -7,10 +7,6 @@ import java.lang.invoke.CallSite;
 import org.junit.Before;
 import org.junit.Test;
 import org.projectodd.rephract.FusionLinker;
-import org.projectodd.rephract.mop.java.DynamicMethod;
-import org.projectodd.rephract.mop.java.JavaClassLinkStrategy;
-import org.projectodd.rephract.mop.java.JavaInstanceLinkStrategy;
-import org.projectodd.rephract.mop.java.ResolverManager;
 
 public class JavaLinkStrategyTest {
     
@@ -250,6 +246,43 @@ public class JavaLinkStrategyTest {
         } catch (NoSuchMethodError e) {
             // expected and correct
         }
+    }
+    
+    @Test
+    public void testMethodsOnDynamicMethod() throws Throwable {
+        CallSite callSite = linker.bootstrap("fusion:getMethod:melt", Object.class, Object.class);
+        CallSite nameCallSite = linker.bootstrap("fusion:getMethod:getName", Object.class, Object.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        Object result = null;
+
+        result = callSite.getTarget().invoke(swiss);
+        assertThat(result).isInstanceOf(DynamicMethod.class);
+        
+        Object nameResult = nameCallSite.getTarget().invoke( result );
+        assertThat( nameResult ).isInstanceOf( DynamicMethod.class );
+        assertThat( ((DynamicMethod)nameResult).getName() ).isEqualTo( "getName" );
+    }
+    
+    @Test
+    public void testBoundMethod() throws Throwable {
+        CallSite callSite = linker.bootstrap("fusion:getMethod:melt", Object.class, Object.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        DynamicMethod result = null;
+
+        result = (DynamicMethod) callSite.getTarget().invoke(swiss);
+        assertThat(result).isInstanceOf(DynamicMethod.class);
+        
+        BoundDynamicMethod boundMethod = new BoundDynamicMethod(swiss, (DynamicMethod) result);
+        
+        CallSite callCallSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class );
+        
+        Object meltResult = callCallSite.getTarget().invoke( boundMethod, null, new Object[] { "taco" } );
+        
+        assertThat( meltResult ).isEqualTo( "melting for: taco" );
     }
     
     @Test

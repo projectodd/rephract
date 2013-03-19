@@ -1,6 +1,7 @@
 package org.projectodd.rephract.mop.java;
 
 import java.lang.invoke.MethodHandle;
+import java.util.Arrays;
 
 import org.projectodd.rephract.StrategicLink;
 import org.projectodd.rephract.StrategyChain;
@@ -36,9 +37,9 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
         }
 
-        DynamicMethod candidateMethod = resolver.getInstanceResolver().getMethod( propName );
-        
-        if ( candidateMethod == null ) {
+        DynamicMethod candidateMethod = resolver.getInstanceResolver().getMethod(propName);
+
+        if (candidateMethod == null) {
             DynamicMethod get = resolver.getInstanceResolver().getMethod("get");
             if (get == null) {
                 return chain.nextStrategy();
@@ -98,9 +99,9 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
             }
         }
 
-        DynamicMethod candidateMethod = resolver.getInstanceResolver().getMethod( propName );
-        
-        if ( candidateMethod == null ) {
+        DynamicMethod candidateMethod = resolver.getInstanceResolver().getMethod(propName);
+
+        if (candidateMethod == null) {
             DynamicMethod put = resolver.getInstanceResolver().getMethod("put");
 
             if (put == null) {
@@ -140,14 +141,23 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
                 spreadTypes[i] = Object.class;
             }
 
-            MethodHandle method = binder.drop(0)
-                    .spread(spreadTypes)
-                    .filter(1, plan.getFilters())
-                    .invoke(plan.getMethodHandle());
+            if (receiver instanceof BoundDynamicMethod) {
+                MethodHandle method = binder.drop(0)
+                        .spread(spreadTypes)
+                        .filter(0, plan.getFilters())
+                        .invoke(plan.getMethodHandle());
 
-            MethodHandle guard = getCallGuard(receiver, args, guardBinder);
+                MethodHandle guard = getCallGuard(receiver, args, guardBinder);
+                return new StrategicLink(method, guard);
+            } else {
+                MethodHandle method = binder.drop(0)
+                        .spread(spreadTypes)
+                        .filter(1, plan.getFilters())
+                        .invoke(plan.getMethodHandle());
 
-            return new StrategicLink(method, guard);
+                MethodHandle guard = getCallGuard(receiver, args, guardBinder);
+                return new StrategicLink(method, guard);
+            }
 
         }
 
