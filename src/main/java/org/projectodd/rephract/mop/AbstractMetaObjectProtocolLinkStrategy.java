@@ -34,7 +34,7 @@ public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObje
     public StrategicLink link(InvocationRequest request, StrategyChain chain) throws NoSuchMethodException, IllegalAccessException {
         StrategicLink link = null;
 
-        if (request.isFusionRequest()) {
+        if (request.isRephractRequest()) {
             Operation op = request.getOperation();
             switch (op.getType()) {
             case GET_PROPERTY:

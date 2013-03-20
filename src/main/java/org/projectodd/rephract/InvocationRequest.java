@@ -5,7 +5,7 @@ import java.util.List;
 
 public interface InvocationRequest {
     
-    boolean isFusionRequest();
+    boolean isRephractRequest();
     Operation getOperation();
     
     String getName();

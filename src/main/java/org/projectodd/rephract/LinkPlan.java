@@ -16,7 +16,7 @@ import org.projectodd.rephract.Operation.Type;
 import com.headius.invokebinder.Binder;
 
 class LinkPlan {
-    private FusionLinker linker;
+    private RephractLinker linker;
     private List<Operation> operations;
 
     private MutableCallSite callSite;
@@ -26,7 +26,7 @@ class LinkPlan {
 
     List<StrategicLink> links = new ArrayList<StrategicLink>();
 
-    public LinkPlan(FusionLinker linker, MutableCallSite callSite, Lookup lookup, String name, MethodType type) throws NoSuchMethodException, IllegalAccessException {
+    public LinkPlan(RephractLinker linker, MutableCallSite callSite, Lookup lookup, String name, MethodType type) throws NoSuchMethodException, IllegalAccessException {
         this.linker = linker;
         this.callSite = callSite;
         this.lookup = lookup;
@@ -37,7 +37,7 @@ class LinkPlan {
     }
 
     private void determineOperations() {
-        if (!this.name.startsWith("fusion")) {
+        if (!this.name.startsWith("dyn")) {
             return;
         }
         
@@ -89,7 +89,7 @@ class LinkPlan {
         }
     }
 
-    public boolean isFusionRequest() {
+    public boolean isRephractRequest() {
         return this.operations != null;
     }
 

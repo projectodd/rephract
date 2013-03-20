@@ -6,7 +6,7 @@ import java.lang.invoke.CallSite;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.projectodd.rephract.FusionLinker;
+import org.projectodd.rephract.RephractLinker;
 import org.projectodd.rephract.mop.MockFrontLinkStrategy.WrappedObject;
 import org.projectodd.rephract.mop.java.Cheese;
 import org.projectodd.rephract.mop.java.DynamicMethod;
@@ -15,11 +15,11 @@ import org.projectodd.rephract.mop.java.Person;
 
 public class ChainedLinkStrategyTest {
 
-    private FusionLinker linker;
+    private RephractLinker linker;
 
     @Before
     public void setUp() throws NoSuchMethodException, IllegalAccessException {
-        this.linker = new FusionLinker();
+        this.linker = new RephractLinker();
         this.linker.addLinkStrategy(new MockFrontLinkStrategy());
         this.linker.addLinkStrategy(new JavaInstanceLinkStrategy());
     }
@@ -27,7 +27,7 @@ public class ChainedLinkStrategyTest {
     @Test
     public void testWrapCallMethod() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getMethod", Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -37,7 +37,7 @@ public class ChainedLinkStrategyTest {
         method = callSite.getTarget().invoke(swiss, "melt");
         assertThat(method).isInstanceOf(DynamicMethod.class);
 
-        CallSite callSite2 = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class);
+        CallSite callSite2 = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
 
         Object result = null;
 

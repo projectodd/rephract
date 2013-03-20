@@ -12,17 +12,17 @@ import java.util.List;
 
 import com.headius.invokebinder.Binder;
 
-public class FusionLinker {
+public class RephractLinker {
 
     private List<LinkStrategy> linkStrategies = new ArrayList<>();
     private LinkLogger logger;
 
-    public FusionLinker() {
+    public RephractLinker() {
         this(new NullLinkLogger());
 
     }
 
-    public FusionLinker(LinkLogger logger) {
+    public RephractLinker(LinkLogger logger) {
         this.logger = logger;
     }
 

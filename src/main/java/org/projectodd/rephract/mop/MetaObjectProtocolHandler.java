@@ -2,11 +2,11 @@ package org.projectodd.rephract.mop;
 
 import java.lang.invoke.CallSite;
 
-import org.projectodd.rephract.FusionLinker;
+import org.projectodd.rephract.RephractLinker;
 
 public class MetaObjectProtocolHandler {
 
-    private FusionLinker linker = new FusionLinker();
+    private RephractLinker linker = new RephractLinker();
 
     private CallSite getProperty;
     private CallSite setProperty;
@@ -16,13 +16,13 @@ public class MetaObjectProtocolHandler {
     private CallSite construct;
 
     public MetaObjectProtocolHandler() throws Throwable {
-        this.getProperty = linker.bootstrap("fusion:getProperty", Object.class, Object.class, String.class);
-        this.setProperty = linker.bootstrap("fusion:setProperty", void.class, Object.class, String.class, Object.class);
+        this.getProperty = linker.bootstrap("dyn:getProperty", Object.class, Object.class, String.class);
+        this.setProperty = linker.bootstrap("dyn:setProperty", void.class, Object.class, String.class, Object.class);
 
-        this.getMethod = linker.bootstrap("fusion:getMethod", Object.class, Object.class, String.class);
+        this.getMethod = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
 
-        this.call = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class);
-        this.construct = linker.bootstrap("fusion:construct", Object.class, Object.class, Object[].class);
+        this.call = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+        this.construct = linker.bootstrap("dyn:construct", Object.class, Object.class, Object[].class);
     }
 
     public void addLinkStrategy(MetaObjectProtocolLinkStrategy linkStrategy) {

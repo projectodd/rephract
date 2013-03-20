@@ -16,8 +16,8 @@ class InvocationRequestImpl implements InvocationRequest {
         this.operation = operation;
     }
     
-    public boolean isFusionRequest() {
-        return this.plan.isFusionRequest();
+    public boolean isRephractRequest() {
+        return this.plan.isRephractRequest();
     }
     
     public Operation getOperation() {

@@ -6,22 +6,22 @@ import java.lang.invoke.CallSite;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.projectodd.rephract.FusionLinker;
+import org.projectodd.rephract.RephractLinker;
 
 public class ContextualLinkStrategyTest {
 
-    private FusionLinker linker;
+    private RephractLinker linker;
 
     @Before
     public void setUp() {
-        this.linker = new FusionLinker();
+        this.linker = new RephractLinker();
         this.linker.addLinkStrategy(new MockContextualLinkStrategy());
     }
 
     @Test
     public void testGetProperty_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getProperty", Object.class, Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, Object.class, String.class);
 
         LangContext context = new LangContext();
         LangObject bob = new LangObject();
@@ -42,7 +42,7 @@ public class ContextualLinkStrategyTest {
     @Test
     public void testGetProperty_withoutContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getProperty", Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, String.class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -64,7 +64,7 @@ public class ContextualLinkStrategyTest {
     @Test
     public void testGetProperty_withWrongContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getProperty", Object.class, Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, Object.class, String.class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -84,7 +84,7 @@ public class ContextualLinkStrategyTest {
 
     @Test
     public void testSetProperty_withContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:setProperty", void.class, Object.class, Object.class, String.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:setProperty", void.class, Object.class, Object.class, String.class, Object.class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -99,7 +99,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testSetProperty_withoutContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:setProperty", void.class, Object.class, String.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:setProperty", void.class, Object.class, String.class, Object.class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -114,7 +114,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testSetProperty_withWrongContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:setProperty", void.class, Object.class, Object.class, String.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:setProperty", void.class, Object.class, Object.class, String.class, Object.class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -129,7 +129,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testCall_withContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object.class, Object[].class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -142,7 +142,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testCall_withoutContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -155,7 +155,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testCall_withWrongContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object.class, Object[].class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -168,7 +168,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testConstruct_withContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:construct", Object.class, Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:construct", Object.class, Object.class, Object.class, Object[].class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -181,7 +181,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testConstruct_withoutContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:construct", Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:construct", Object.class, Object.class, Object[].class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);
@@ -194,7 +194,7 @@ public class ContextualLinkStrategyTest {
     
     @Test
     public void testConstruct_withWrongContext() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:construct", Object.class, Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:construct", Object.class, Object.class, Object.class, Object[].class);
 
         LangContext context = new LangContext();
         LangContext.setThreadContext(context);

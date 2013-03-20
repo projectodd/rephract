@@ -6,15 +6,15 @@ import java.lang.invoke.CallSite;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.projectodd.rephract.FusionLinker;
+import org.projectodd.rephract.RephractLinker;
 
 public class JavaLinkStrategyTest {
     
-    private FusionLinker linker;
+    private RephractLinker linker;
 
     @Before
     public void setUp() throws NoSuchMethodException, IllegalAccessException {
-        this.linker = new FusionLinker();
+        this.linker = new RephractLinker();
         ResolverManager manager = new ResolverManager();
         this.linker.addLinkStrategy(new JavaClassLinkStrategy( manager ));
         this.linker.addLinkStrategy(new JavaInstanceLinkStrategy( manager ));
@@ -23,7 +23,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getProperty_dynamic() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getProperty", Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -58,7 +58,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getProperty_dynamic_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getProperty", Object.class, Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -93,7 +93,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getProperty_fixed() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getProperty:name", Object.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:getProperty:name", Object.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -110,7 +110,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getProperty_fixed_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getProperty:name", Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getProperty:name", Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -127,7 +127,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_setProperty_dynamic() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:setProperty", void.class, Object.class, String.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:setProperty", void.class, Object.class, String.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -142,7 +142,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_setProperty_dynamic_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:setProperty", void.class, Object.class, Object.class, String.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:setProperty", void.class, Object.class, Object.class, String.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -157,7 +157,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_setProperty_fixed() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:setProperty:name", void.class, Object.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:setProperty:name", void.class, Object.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -172,7 +172,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_setProperty_fixed_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:setProperty:name", void.class, Object.class, Object.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:setProperty:name", void.class, Object.class, Object.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -187,7 +187,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getMethod_dynamic() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getMethod", Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -209,7 +209,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getMethod_dynamic_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getMethod", Object.class, Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -230,7 +230,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getMethod_fixed() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getMethod:melt", Object.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod:melt", Object.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -250,8 +250,8 @@ public class JavaLinkStrategyTest {
     
     @Test
     public void testMethodsOnDynamicMethod() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:getMethod:melt", Object.class, Object.class);
-        CallSite nameCallSite = linker.bootstrap("fusion:getMethod:getName", Object.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod:melt", Object.class, Object.class);
+        CallSite nameCallSite = linker.bootstrap("dyn:getMethod:getName", Object.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
 
@@ -267,7 +267,7 @@ public class JavaLinkStrategyTest {
     
     @Test
     public void testBoundMethod() throws Throwable {
-        CallSite callSite = linker.bootstrap("fusion:getMethod:melt", Object.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod:melt", Object.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
 
@@ -278,7 +278,7 @@ public class JavaLinkStrategyTest {
         
         BoundDynamicMethod boundMethod = new BoundDynamicMethod(swiss, (DynamicMethod) result);
         
-        CallSite callCallSite = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class );
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class );
         
         Object meltResult = callCallSite.getTarget().invoke( boundMethod, null, new Object[] { "taco" } );
         
@@ -288,7 +288,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getMethod_fixed_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getMethod:melt", Object.class, Object.class, Object.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod:melt", Object.class, Object.class, Object.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -309,7 +309,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getMethod_call() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getMethod", Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -319,7 +319,7 @@ public class JavaLinkStrategyTest {
         method = callSite.getTarget().invoke(swiss, "melt");
         assertThat(method).isInstanceOf(DynamicMethod.class);
         
-        CallSite callSite2 = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object[].class );
+        CallSite callSite2 = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class );
         
         Object result = null;
         
@@ -339,7 +339,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_getMethod_call_withContext() throws Throwable {
 
-        CallSite callSite = linker.bootstrap("fusion:getMethod", Object.class, Object.class, Object.class, String.class);
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, Object.class, String.class);
 
         Cheese swiss = new Cheese("swiss", 2);
         Person bob = new Person("bob", 39);
@@ -349,7 +349,7 @@ public class JavaLinkStrategyTest {
         method = callSite.getTarget().invoke(swiss, "random context", "melt");
         assertThat(method).isInstanceOf(DynamicMethod.class);
         
-        CallSite callSite2 = linker.bootstrap("fusion:call", Object.class, Object.class, Object.class, Object.class, Object[].class );
+        CallSite callSite2 = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object.class, Object[].class );
         
         Object result = null;
         
@@ -369,7 +369,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_construct() throws Throwable {
         
-        CallSite callSite = linker.bootstrap("fusion:construct", Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:construct", Object.class, Object.class, Object[].class);
         
         Object result = null;
         
@@ -406,7 +406,7 @@ public class JavaLinkStrategyTest {
     @Test
     public void testLinkJavaBeans_construct_withContext() throws Throwable {
         
-        CallSite callSite = linker.bootstrap("fusion:construct", Object.class, Object.class, Object.class, Object[].class);
+        CallSite callSite = linker.bootstrap("dyn:construct", Object.class, Object.class, Object.class, Object[].class);
         
         Object result = null;
         
