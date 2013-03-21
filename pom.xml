@@ -19,6 +19,19 @@
         <version>7</version>
     </parent>
 
+    <developers>
+        <developer>
+            <id>bobmcw</id>
+            <name>Bob McWhirter</name>
+        </developer>
+        <developer>
+            <id>qmx</id>
+            <name>Douglas Campos</name>
+            <url>http://github.com/qmx</url>
+            <email>qmx@qmx.me</email>
+        </developer>
+    </developers>
+
     <scm>
         <connection>scm:git:git@github.com:projectodd/rephract.git</connection>
         <developerConnection>scm:git:git@github.com:projectodd/rephract.git</developerConnection>
