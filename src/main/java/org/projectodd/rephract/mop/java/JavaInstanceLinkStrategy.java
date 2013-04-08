@@ -85,13 +85,14 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
 
         Resolver resolver = getResolver(receiver.getClass());
         DynamicMethod dynamicWriter = resolver.getInstanceResolver().getPropertyWriter(propName);
-
+        
         if (dynamicWriter != null) {
             InvocationPlan plan = dynamicWriter.findMethodInvoationPlan(new Object[] { value });
-
+            
             if (plan != null) {
                 MethodHandle method = binder
                         .drop(1)
+                        .convert( void.class, Object.class, Object.class )
                         .filter(1, plan.getFilters())
                         .invoke(plan.getMethodHandle());
 
