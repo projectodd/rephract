@@ -31,6 +31,7 @@ public class CoercionMatrix {
         initDefaultPrimitiveLongCoercions();
         initDefaultBooleanCoercions();
         initDefaultPrimitiveBooleanCoercions();
+        initDefaultPrimitiveByteCoercions();
     }
     
     protected void addCoercion(int distance, Class<?> toType, Class<?> fromType, MethodHandle filter) {
@@ -99,6 +100,18 @@ public class CoercionMatrix {
         addCoercion( 2, int.class, Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveInteger", methodType( int.class, Number.class ) ) );
     }
     
+    private void initDefaultPrimitiveByteCoercions() throws NoSuchMethodException, IllegalAccessException {
+        Lookup lookup = MethodHandles.lookup();
+        
+        addCoercion( 0, byte.class, byte.class, MethodHandles.identity(byte.class) );
+        addCoercion( 0, byte.class, Byte.class, MethodHandles.identity(byte.class) );
+        addCoercion( 1, byte.class, Short.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveByte", methodType( byte.class, Number.class ) ) );
+        addCoercion( 1, byte.class, Integer.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveByte", methodType( byte.class, Number.class ) ) );
+        addCoercion( 1, byte.class, Long.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveByte", methodType( byte.class, Number.class ) ) );
+        addCoercion( 2, byte.class, Double.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveByte", methodType( byte.class, Number.class ) ) );
+        addCoercion( 2, byte.class, Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveByte", methodType( byte.class, Number.class ) ) );
+    }
+    
     private void initDefaultLongCoercions() throws NoSuchMethodException, IllegalAccessException {
         Lookup lookup = MethodHandles.lookup();
         
@@ -139,6 +152,10 @@ public class CoercionMatrix {
     
     public static int numberToPrimitiveInteger(Number value) {
         return value.intValue();
+    }
+    
+    public static byte numberToPrimitiveByte(Number value) {
+        return value.byteValue();
     }
     
     public static Long numberToLong(Number value) {
