@@ -51,7 +51,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
                 .convert(Object.class, receiver.getClass())
                 .invoke(reader);
 
-        return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
+        return new StrategicLink(method, getReceiverClassAndNameGuard((Class<?>) receiver, propName, guardBinder));
     }
 
     @Override

@@ -440,4 +440,54 @@ public class JavaLinkStrategyTest {
         
     }
 
+    @Test
+    public void testLinkJavaClass_getProperty() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, String.class);
+
+        Object result = null;
+        
+        result = callSite.getTarget().invoke(Float.class, "MAX_VALUE");
+        assertThat(result).isEqualTo(Float.MAX_VALUE);
+        
+        result = callSite.getTarget().invoke(Double.class, "MAX_VALUE");
+        assertThat(result).isEqualTo(Double.MAX_VALUE);
+    }
+    
+    @Test
+    public void testLinkJavaClass_getProperty_dynamic_withContext() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, Object.class, String.class);
+        Object result = null;
+        
+        result = callSite.getTarget().invoke(Float.class, "random context", "MAX_VALUE");
+        assertThat(result).isEqualTo(Float.MAX_VALUE);
+        
+        result = callSite.getTarget().invoke(Double.class, "random context", "MAX_VALUE");
+        assertThat(result).isEqualTo(Double.MAX_VALUE);
+    }
+
+    @Test
+    public void testLinkJavaClass_getProperty_fixed() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getProperty:MAX_VALUE", Object.class, Object.class);
+
+        Object result = null;
+
+        result = callSite.getTarget().invoke(Float.class);
+        assertThat(result).isEqualTo(Float.MAX_VALUE);
+
+        result = callSite.getTarget().invoke(Double.class);
+        assertThat(result).isEqualTo(Double.MAX_VALUE);
+    }
+    
+    @Test
+    public void testLinkJavaClass_getProperty_fixed_withContext() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getProperty:MAX_VALUE", Object.class, Object.class, String.class);
+
+        Object result = null;
+
+        result = callSite.getTarget().invoke(Float.class, "random context");
+        assertThat(result).isEqualTo(Float.MAX_VALUE);
+
+        result = callSite.getTarget().invoke(Double.class, "random context" );
+        assertThat(result).isEqualTo(Double.MAX_VALUE);
+    }
 }
