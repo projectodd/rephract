@@ -29,6 +29,8 @@ public class CoercionMatrix {
         initDefaultPrimitiveIntegerCoercions();
         initDefaultLongCoercions();
         initDefaultPrimitiveLongCoercions();
+        initDefaultDoubleCoercions();
+        initDefaultPrimitiveDoubleCoercions();
         initDefaultBooleanCoercions();
         initDefaultPrimitiveBooleanCoercions();
         initDefaultPrimitiveByteCoercions();
@@ -111,6 +113,28 @@ public class CoercionMatrix {
         addCoercion( 2, byte.class, Double.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveByte", methodType( byte.class, Number.class ) ) );
         addCoercion( 2, byte.class, Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveByte", methodType( byte.class, Number.class ) ) );
     }
+        
+    private void initDefaultDoubleCoercions() throws NoSuchMethodException, IllegalAccessException {
+        Lookup lookup = MethodHandles.lookup();
+        
+        addCoercion(0, Double.class, double.class, MethodHandles.identity(double.class));
+        addCoercion(0, Double.class, Double.class, MethodHandles.identity(Double.class));
+        addCoercion( 1, Double.class, Float.class, lookup.findStatic(CoercionMatrix.class, "numberToDouble", methodType( Double.class, Number.class ) ) );
+        addCoercion( 2, Double.class, Short.class, lookup.findStatic(CoercionMatrix.class, "numberToDouble", methodType( Double.class, Number.class ) ) );
+        addCoercion( 2, Double.class, Integer.class, lookup.findStatic(CoercionMatrix.class, "numberToDouble", methodType( Double.class, Number.class ) ) );
+        addCoercion( 2, Double.class, Long.class, lookup.findStatic(CoercionMatrix.class, "numberToDouble", methodType( Double.class, Number.class ) ) );
+    }
+    
+    private void initDefaultPrimitiveDoubleCoercions() throws NoSuchMethodException, IllegalAccessException {
+        Lookup lookup = MethodHandles.lookup();
+        
+        addCoercion( 0, double.class, double.class, MethodHandles.identity(double.class) );
+        addCoercion( 0, double.class, Double.class, MethodHandles.identity(double.class) );
+        addCoercion( 1, double.class, Float.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveDouble", methodType( double.class, Number.class ) ) );
+        addCoercion( 2, double.class, Short.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveDouble", methodType( double.class, Number.class ) ) );
+        addCoercion( 2, double.class, Integer.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveDouble", methodType( double.class, Number.class ) ) );
+        addCoercion( 2, double.class, Long.class, lookup.findStatic(CoercionMatrix.class, "numberToPrimitiveDouble", methodType( double.class, Number.class ) ) );
+    }
     
     private void initDefaultLongCoercions() throws NoSuchMethodException, IllegalAccessException {
         Lookup lookup = MethodHandles.lookup();
@@ -178,7 +202,7 @@ public class CoercionMatrix {
         return value.doubleValue();
     }
     
-    public static double numberToDoublePrimitiveDouble(Number value) {
+    public static double numberToPrimitiveDouble(Number value) {
         return value.doubleValue();
     }
     
