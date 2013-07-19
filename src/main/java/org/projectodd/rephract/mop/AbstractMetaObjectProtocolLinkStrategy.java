@@ -26,7 +26,7 @@ public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObje
         this.logger = new NullLinkLogger();
     }
 
-    public void log(String message) {
+    public void log(String message, Object... arguments) {
         this.logger.log(Thread.currentThread().getName() + ": " + getClass().getSimpleName() + ": " + message);
     }
 

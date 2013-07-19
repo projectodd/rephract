@@ -16,9 +16,9 @@ public class FileLinkLogger implements LinkLogger {
     }
 
     @Override
-    public void log(String message) {
+    public void log(String message, Object... arguments) {
         try {
-            out.write( message + "\n" );
+            out.write( String.format(message, arguments) + "\n" );
             out.flush();
         } catch (IOException e) {
             System.err.println( message );
