@@ -27,7 +27,11 @@ public abstract class AbstractMetaObjectProtocolLinkStrategy implements MetaObje
     }
 
     public void log(String message, Object... arguments) {
-        this.logger.log(Thread.currentThread().getName() + ": " + getClass().getSimpleName() + ": " + message);
+        Object[] args = new Object[arguments.length + 2];
+        args[0] = Thread.currentThread().getName();
+        args[1] = getClass().getSimpleName();
+        System.arraycopy(arguments, 0, args, 2, arguments.length);
+        this.logger.log("%s: %s: " + message, args);
     }
 
     @Override
