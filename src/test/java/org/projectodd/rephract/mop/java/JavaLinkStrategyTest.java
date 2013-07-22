@@ -284,7 +284,23 @@ public class JavaLinkStrategyTest {
         
         assertThat( meltResult ).isEqualTo( "melting for: taco" );
     }
-    
+
+    @Test(timeout = 2000)
+    public void testMultipleInvocationsDoesNotReplan() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        Object method = callSite.getTarget().invoke(swiss, "melt");
+
+        CallSite callSite2 = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class );
+
+        for (int i = 0; i < 10000; i++) {
+            Object result = callSite2.getTarget().invoke( method, swiss, new Object[] { String.valueOf(i) } );
+            assertThat( result ).isEqualTo( "melting for: " + i );
+        }
+    }
+
     @Test
     public void testLinkJavaBeans_getMethod_fixed_withContext() throws Throwable {
 
