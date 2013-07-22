@@ -31,7 +31,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
     public StrategicLink linkGetProperty(StrategyChain chain, Object receiver, String propName, Binder binder, Binder guardBinder) throws NoSuchMethodException,
             IllegalAccessException {
 
-        log("receiver: " + receiver + " // " + propName);
+        log("receiver: %s // %s", receiver, propName );
 
         if (!(receiver instanceof Class)) {
             return chain.nextStrategy();
@@ -40,7 +40,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
         Resolver resolver = getResolver((Class<?>) receiver);
         MethodHandle reader = resolver.getClassResolver().getPropertyReader(propName);
 
-        log("reader: " + reader);
+        log("reader: %s", reader);
 
         if (reader == null) {
             return chain.nextStrategy();

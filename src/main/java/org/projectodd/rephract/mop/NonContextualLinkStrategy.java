@@ -56,7 +56,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
             guardBinder = dropContext(guardBinder);
         }
         
-        log( "[GET_PROPERTY] receiver=" + receiver + "; propName=" + propName );
+        log( "[GET_PROPERTY] receiver=%s; propName=%s", receiver, propName );
         return linkGetProperty(chain, receiver, propName, binder, guardBinder);
     }
 
@@ -108,7 +108,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
         binder = binder.convert(Object.class, Object.class, String.class, Object.class);
         guardBinder = guardBinder.convert(boolean.class, Object.class, String.class, Object.class);
 
-        log( "[SET_PROPERTY] receiver=" + receiver + "; propName=" + propName );
+        log( "[SET_PROPERTY] receiver=%s; propName=%s", receiver, propName );
         return linkSetProperty(chain, receiver, propName, value, binder, guardBinder);
     }
 
@@ -159,7 +159,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
         binder = binder.convert(Object.class, Object.class, String.class);
         guardBinder = guardBinder.convert(boolean.class, Object.class, String.class);
 
-        log( "[GET_METHOD] receiver=" + receiver + "; propName=" + propName );
+        log( "[GET_METHOD] receiver=%s; propName=%s", receiver, propName );
         return linkGetMethod(chain, receiver, propName, binder, guardBinder);
     }
 
@@ -197,7 +197,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
             callArgs = (Object[]) args[3];
         }
 
-        log( "[CALL] receiver=" + receiver );
+        log( "[CALL] receiver=%s", receiver );
         return linkCall(chain, receiver, self, callArgs, binder, guardBinder);
     }
 
@@ -226,7 +226,7 @@ public abstract class NonContextualLinkStrategy extends BaseMetaObjectProtocolLi
             callArgs = (Object[]) args[2];
         }
 
-        log( "[CONSTRUCT] receiver=" + receiver );
+        log( "[CONSTRUCT] receiver=%s", receiver );
         return linkConstruct(chain, receiver, callArgs, binder, guardBinder);
     }
     
