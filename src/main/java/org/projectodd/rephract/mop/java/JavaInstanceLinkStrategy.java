@@ -156,7 +156,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
                         .filter(1, plan.getFilters())
                         .invoke(plan.getMethodHandle());
 
-                MethodHandle guard = getCallGuard(receiver, args, guardBinder);
+                MethodHandle guard = getCallGuard(self, args, guardBinder);
                 return new StrategicLink(method, guard);
             }
 
