@@ -302,6 +302,22 @@ public class JavaLinkStrategyTest {
     }
 
     @Test
+    public void testInstanceGuardsCantBeGreedy() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, Object.class);
+        NumberThing n1 = new NumberThing();
+        Object longMethod = callSite.getTarget().invoke(n1, "longMethod");
+        Object intMethod = callSite.getTarget().invoke(n1, "intMethod");
+        for (int i = 0; i < 10000; i++) {
+            CallSite site = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+            Object resultA = site.getTarget().invoke(longMethod, n1, new Object[]{String.valueOf(i)});
+            assertThat(resultA).isInstanceOf(Long.class);
+
+            Object resultB = site.getTarget().invoke(intMethod, n1, new Object[]{i});
+            assertThat(resultB).isInstanceOf(String.class);
+        }
+    }
+
+    @Test
     public void testLinkJavaBeans_getMethod_fixed_withContext() throws Throwable {
 
         CallSite callSite = linker.bootstrap("dyn:getMethod:melt", Object.class, Object.class, Object.class);
