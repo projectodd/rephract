@@ -284,7 +284,39 @@ public class JavaLinkStrategyTest {
         
         assertThat( meltResult ).isEqualTo( "melting for: taco" );
     }
-    
+
+    @Test(timeout = 2000)
+    public void testMultipleInvocationsDoesNotReplan() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        Object method = callSite.getTarget().invoke(swiss, "melt");
+
+        CallSite callSite2 = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class );
+
+        for (int i = 0; i < 10000; i++) {
+            Object result = callSite2.getTarget().invoke( method, swiss, new Object[] { String.valueOf(i) } );
+            assertThat( result ).isEqualTo( "melting for: " + i );
+        }
+    }
+
+    @Test
+    public void testInstanceGuardsCantBeGreedy() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, Object.class);
+        NumberThing n1 = new NumberThing();
+        Object longMethod = callSite.getTarget().invoke(n1, "longMethod");
+        Object intMethod = callSite.getTarget().invoke(n1, "intMethod");
+        for (int i = 0; i < 10000; i++) {
+            CallSite site = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+            Object resultA = site.getTarget().invoke(longMethod, n1, new Object[]{String.valueOf(i)});
+            assertThat(resultA).isInstanceOf(Long.class);
+
+            Object resultB = site.getTarget().invoke(intMethod, n1, new Object[]{i});
+            assertThat(resultB).isInstanceOf(String.class);
+        }
+    }
+
     @Test
     public void testLinkJavaBeans_getMethod_fixed_withContext() throws Throwable {
 
