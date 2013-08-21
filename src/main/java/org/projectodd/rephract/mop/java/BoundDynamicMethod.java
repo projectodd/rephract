@@ -54,6 +54,10 @@ public class BoundDynamicMethod extends DynamicMethod {
                 .insert(0, this.self)
                 .invoke(MethodHandles.identity(Object.class));
     }
+
+    public Object getSelf() {
+        return this.self;
+    }
     
     
     public String toString() {
