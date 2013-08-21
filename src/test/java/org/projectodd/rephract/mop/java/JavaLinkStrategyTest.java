@@ -305,6 +305,59 @@ public class JavaLinkStrategyTest {
         assertThat( meltResult ).isEqualTo( "melting for: [taco, burrito]" );
     }
 
+    @Test
+    public void testInstanceMethodsWithSameTypesDifferentName() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
+        Cheese swiss = new Cheese("swiss", 2);
+
+        Object method = callSite.getTarget().invoke(swiss, "melt");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        CallSite callSite2 = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class );
+        Object result = callSite2.getTarget().invoke( method, swiss, new Object[] { "taco" } );
+        assertThat( result ).isEqualTo( "melting for: taco" );
+
+        method = callSite.getTarget().invoke(swiss, "shred");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        result = callSite2.getTarget().invoke( method, swiss, new Object[] { "nachos" } );
+        assertThat( result ).isEqualTo( "shredding for: nachos" );
+
+        method = callSite.getTarget().invoke(swiss, "melt");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        result = callSite2.getTarget().invoke( method, swiss, new Object[] { "taco" } );
+        assertThat( result ).isEqualTo( "melting for: taco" );
+
+        method = callSite.getTarget().invoke(swiss, "shred");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        result = callSite2.getTarget().invoke( method, swiss, new Object[] { "nachos" } );
+        assertThat( result ).isEqualTo( "shredding for: nachos" );
+    }
+
+    @Test
+    public void testClassMethodsWithSameTypesDifferentNames() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
+
+        Object method = callSite.getTarget().invoke(Cheese.class, "slice");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        CallSite callSite2 = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class );
+        Object result = callSite2.getTarget().invoke( method, Cheese.class, new Object[] { "sandwich" } );
+        assertThat( result ).isEqualTo( "slicing for: sandwich" );
+
+        method = callSite.getTarget().invoke(Cheese.class, "grate");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        result = callSite2.getTarget().invoke( method, Cheese.class, new Object[] { "burrito" } );
+        assertThat( result ).isEqualTo( "grating for: burrito" );
+
+        method = callSite.getTarget().invoke(Cheese.class, "slice");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        result = callSite2.getTarget().invoke( method, Cheese.class, new Object[] { "sandwich" } );
+        assertThat( result ).isEqualTo( "slicing for: sandwich" );
+
+        method = callSite.getTarget().invoke(Cheese.class, "grate");
+        assertThat(method).isInstanceOf(DynamicMethod.class);
+        result = callSite2.getTarget().invoke( method, Cheese.class, new Object[] { "burrito" } );
+        assertThat( result ).isEqualTo( "grating for: burrito" );
+    }
+
     @Test(timeout = 2000)
     public void testMultipleInvocationsDoesNotReplan() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);

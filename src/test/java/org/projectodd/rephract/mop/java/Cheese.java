@@ -40,4 +40,16 @@ public class Cheese {
         return "melted by: " + byPerson.getName();
     }
 
+    public String shred(String forRecipe) {
+        return "shredding for: " + forRecipe;
+    }
+
+    public static String slice(String forRecipe) {
+        return "slicing for: " + forRecipe;
+    }
+
+    public static String grate(String forRecipe) {
+        return "grating for: " + forRecipe;
+    }
+
 }

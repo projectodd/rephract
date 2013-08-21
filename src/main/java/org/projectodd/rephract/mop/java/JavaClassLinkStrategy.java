@@ -171,7 +171,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
                     .filter(0, plan.getFilters())
                     .invoke(plan.getMethodHandle());
 
-            MethodHandle guard = getCallGuard(receiver, args, guardBinder);
+            MethodHandle guard = getCallGuard(self, dynamicMethod, args, guardBinder);
 
             return new StrategicLink(method, guard);
 
@@ -180,21 +180,25 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
         return chain.nextStrategy();
     }
 
-    private MethodHandle getCallGuard(Object self, Object[] args, Binder binder) throws NoSuchMethodException, IllegalAccessException {
+    private MethodHandle getCallGuard(Object self, DynamicMethod dynamicMethod, Object[] args, Binder binder) throws NoSuchMethodException, IllegalAccessException {
         Class<?>[] argClasses = new Class<?>[args.length];
 
         for (int i = 0; i < args.length; ++i) {
             argClasses[i] = args[i].getClass();
         }
 
-        return binder.drop(0)
-                .insert(2, self.getClass())
-                .insert(3, (Object) argClasses)
+        return binder.insert(3, self.getClass())
+                .insert(4, dynamicMethod.getName() )
+                .insert(5, (Object) argClasses)
                 .invokeStatic(lookup(), JavaClassLinkStrategy.class, "callGuard");
     }
 
-    public static boolean callGuard(Object self, Object[] args, Class<?> expectedReceiverClass, Class<?>[] expectedArgClasses) {
+    public static boolean callGuard(Object receiver, Object self, Object[] args, Class<?> expectedReceiverClass, String expectedName, Class<?>[] expectedArgClasses) {
         if (!expectedReceiverClass.isAssignableFrom(self.getClass())) {
+            return false;
+        }
+
+        if (!(receiver instanceof DynamicMethod) || !((DynamicMethod) receiver).getName().equals(expectedName)) {
             return false;
         }
 
