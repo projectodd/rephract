@@ -1,5 +1,7 @@
 package org.projectodd.rephract.mop.java;
 
+import java.util.Arrays;
+
 public class Cheese {
     
     private String name;
@@ -28,6 +30,10 @@ public class Cheese {
     
     public String melt(String forRecipe) {
         return "melting for: " + forRecipe;
+    }
+    
+    public String melt(String[] forRecipes) {
+        return "melting for: " + Arrays.toString( forRecipes );
     }
     
     public String melt(Person byPerson) {

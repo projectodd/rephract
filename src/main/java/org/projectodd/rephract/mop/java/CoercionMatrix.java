@@ -1,9 +1,12 @@
 package org.projectodd.rephract.mop.java;
 
+import com.headius.invokebinder.Binder;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodHandles.Lookup;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static java.lang.invoke.MethodType.*;
@@ -21,8 +24,20 @@ public class CoercionMatrix {
         }
         
     }
+
+    private static class ArrayCoercionEntry extends CoercionEntry {
+        Class<?> fromType;
+        ArrayCoercer arrayCoercer;
+
+        ArrayCoercionEntry(int distance, MethodHandle filter, Class<?> fromType, ArrayCoercer arrayCoercer) {
+            super(distance, filter);
+            this.fromType = fromType;
+            this.arrayCoercer = arrayCoercer;
+        }
+    }
     
     private Map<Class<?>,Map<Class<?>,CoercionEntry>> matrix = new HashMap<>();
+    private List<ArrayCoercionEntry> arrayCoercions = new ArrayList<>();
     
     public CoercionMatrix() throws NoSuchMethodException, IllegalAccessException {
         initDefaultIntegerCoercions();
@@ -34,6 +49,7 @@ public class CoercionMatrix {
         initDefaultBooleanCoercions();
         initDefaultPrimitiveBooleanCoercions();
         initDefaultPrimitiveByteCoercions();
+        initDefaultArrayCoercions();
     }
     
     protected void addCoercion(int distance, Class<?> toType, Class<?> fromType, MethodHandle filter) {
@@ -45,6 +61,14 @@ public class CoercionMatrix {
         }
         
         row.put( fromType, new CoercionEntry( distance, filter ) );
+    }
+    
+    protected void addArrayCoercion(int distance, Class<?> fromType, ArrayCoercer arrayCoercer) throws IllegalAccessException, NoSuchMethodException {
+        Lookup lookup = MethodHandles.lookup();
+        MethodHandle filter = Binder.from(Object[].class, Object.class)
+                .insert(0, arrayCoercer)
+                .invokeVirtual(lookup, "coerceFromType");
+        this.arrayCoercions.add( new ArrayCoercionEntry( distance, filter, fromType, arrayCoercer ) );
     }
     
     public int isCompatible(Class<?> target, Class<?> actual) {
@@ -64,6 +88,34 @@ public class CoercionMatrix {
         }
         return -1;
     }
+
+    public int isCompatible(Class<?> target, Object actual) {
+        int typesAreCompatible = isCompatible(target, actual.getClass());
+
+        if (typesAreCompatible < 0) {
+            ArrayCoercionEntry arrayCoercion = getArrayCoercion(target, actual);
+            if (arrayCoercion != null) {
+                return arrayCoercion.distance;
+            }
+        }
+        return typesAreCompatible;
+    }
+
+    protected ArrayCoercionEntry getArrayCoercion(Class<?> target, Object actual) {
+        loop: for (ArrayCoercionEntry arrayCoercion : arrayCoercions) {
+            if (Object[].class.isAssignableFrom(target) && arrayCoercion.fromType.isAssignableFrom(actual.getClass())) {
+                Object[] arrayArgs = arrayCoercion.arrayCoercer.convertToObjectArray(actual);
+                for (int i = 0; i < arrayArgs.length; i++) {
+                    int arrayParamDistance = (arrayArgs[i] == null ? 0 : isCompatible(target.getComponentType(), arrayArgs[i]));
+                    if (arrayParamDistance < 0) {
+                        continue loop;
+                    }
+                }
+                return arrayCoercion;
+            }
+        }
+        return null;
+    }
     
     public MethodHandle getFilter(Class<?> target, Class<?> actual) {
         Map<Class<?>, CoercionEntry> row = this.matrix.get(target);
@@ -73,6 +125,25 @@ public class CoercionMatrix {
         }
         
         CoercionEntry entry = row.get(actual);
+        if ( entry != null ) {
+            return entry.filter;
+        }
+        
+        return MethodHandles.identity(target);
+    }
+
+    public MethodHandle getFilter(Class<?> target, Object actual) {
+        Map<Class<?>, CoercionEntry> row = this.matrix.get(target);
+
+        if ( row == null ) {
+            ArrayCoercionEntry arrayCoercion = getArrayCoercion(target, actual);
+            if (arrayCoercion != null) {
+                return arrayCoercion.filter.asType( methodType(target, actual.getClass()));
+            }
+            return MethodHandles.identity(target);
+        }
+        
+        CoercionEntry entry = row.get(actual.getClass());
         if ( entry != null ) {
             return entry.filter;
         }
@@ -166,6 +237,10 @@ public class CoercionMatrix {
     private void initDefaultPrimitiveBooleanCoercions() throws NoSuchMethodException, IllegalAccessException {
         addCoercion( 0, boolean.class, boolean.class, MethodHandles.identity(boolean.class) );
         addCoercion( 0, boolean.class, Boolean.class, MethodHandles.identity(boolean.class) );
+    }
+
+    private void initDefaultArrayCoercions() throws NoSuchMethodException, IllegalAccessException {
+        addArrayCoercion( 0, Object[].class, new ArrayCoercer());
     }
     
     // -------------------------------------------------

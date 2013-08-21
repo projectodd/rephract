@@ -285,6 +285,26 @@ public class JavaLinkStrategyTest {
         assertThat( meltResult ).isEqualTo( "melting for: taco" );
     }
 
+    @Test
+    public void testBoundMethodWithArrayParameter() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod:melt", Object.class, Object.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        DynamicMethod result = null;
+
+        result = (DynamicMethod) callSite.getTarget().invoke(swiss);
+        assertThat(result).isInstanceOf(DynamicMethod.class);
+        
+        BoundDynamicMethod boundMethod = new BoundDynamicMethod(swiss, (DynamicMethod) result);
+        
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class );
+        
+        Object meltResult = callCallSite.getTarget().invoke( boundMethod, null, new Object[] { new Object[] { "taco", "burrito" } } );
+        
+        assertThat( meltResult ).isEqualTo( "melting for: [taco, burrito]" );
+    }
+
     @Test(timeout = 2000)
     public void testMultipleInvocationsDoesNotReplan() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);

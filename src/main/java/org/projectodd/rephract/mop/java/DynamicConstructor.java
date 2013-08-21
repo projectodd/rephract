@@ -30,7 +30,7 @@ public class DynamicConstructor extends AbstractDynamicMember {
             Class<?>[] paramTypes = each.type().parameterArray();
             if (paramTypes.length == args.length) {
                 for (int j = 0; j < paramTypes.length; ++j) {
-                    int paramDistance = (args[j] == null ? 0 : matrix.isCompatible(paramTypes[j], args[j].getClass()));
+                    int paramDistance = (args[j] == null ? 0 : matrix.isCompatible(paramTypes[j], args[j]));
                     if (paramDistance < 0) {
                         continue loop;
                     }
@@ -49,7 +49,7 @@ public class DynamicConstructor extends AbstractDynamicMember {
             MethodHandle[] filters = new MethodHandle[paramTypes.length];
 
             for (int j = 0; j < paramTypes.length; ++j) {
-                filters[j] = matrix.getFilter(paramTypes[j], args[j].getClass());
+                filters[j] = matrix.getFilter(paramTypes[j], args[j]);
             }
             return new InvocationPlan(matchedMethod, filters);
 
