@@ -10,14 +10,16 @@ import com.headius.invokebinder.Binder;
 
 public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
 
-    private ResolverManager manager;
+    private final ReturnFilters returnFilters;
+    private final ResolverManager manager;
 
     public JavaInstanceLinkStrategy() throws NoSuchMethodException, IllegalAccessException {
-        this(new ResolverManager());
+        this(new ResolverManager(), new ReturnFilters());
     }
 
-    public JavaInstanceLinkStrategy(ResolverManager manager) {
+    public JavaInstanceLinkStrategy(ResolverManager manager, ReturnFilters returnFilters) {
         this.manager = manager;
+        this.returnFilters = returnFilters;
     }
 
     @Override
@@ -31,6 +33,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
         if (reader != null) {
             MethodHandle method = binder.drop(1)
                     .convert(Object.class, receiver.getClass())
+                    .filterReturn(returnFilters.getReturnFilter(reader))
                     .invoke(reader);
 
             return new StrategicLink(method, getReceiverClassAndNameGuard(receiver.getClass(), propName, guardBinder));
@@ -145,6 +148,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
                 MethodHandle method = binder.drop(0)
                         .spread(spreadTypes)
                         .filter(0, plan.getFilters())
+                        .filterReturn(returnFilters.getReturnFilter(plan.getMethodHandle()))
                         .invoke(plan.getMethodHandle());
 
                 MethodHandle guard = getCallGuard(((BoundDynamicMethod) receiver).getSelf(), dynamicMethod, args, guardBinder);
@@ -153,6 +157,7 @@ public class JavaInstanceLinkStrategy extends NonContextualLinkStrategy {
                 MethodHandle method = binder.drop(0)
                         .spread(spreadTypes)
                         .filter(1, plan.getFilters())
+                        .filterReturn(returnFilters.getReturnFilter(plan.getMethodHandle()))
                         .invoke(plan.getMethodHandle());
 
                 MethodHandle guard = getCallGuard(self, dynamicMethod, args, guardBinder);

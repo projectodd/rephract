@@ -1,23 +1,33 @@
 package org.projectodd.rephract.mop.java;
 
-import static org.fest.assertions.Assertions.*;
-
-import java.lang.invoke.CallSite;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.projectodd.rephract.RephractLinker;
+
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 public class JavaLinkStrategyTest {
     
     private RephractLinker linker;
 
+    public static long intToLong(int value) {
+        return (long) value;
+    }
+
     @Before
     public void setUp() throws NoSuchMethodException, IllegalAccessException {
         this.linker = new RephractLinker();
-        ResolverManager manager = new ResolverManager();
-        this.linker.addLinkStrategy(new JavaClassLinkStrategy( manager ));
-        this.linker.addLinkStrategy(new JavaInstanceLinkStrategy( manager ));
+        ReturnFilters returnFilters = new ReturnFilters();
+        returnFilters.addReturnFilter(int.class, MethodHandles.lookup().findStatic(JavaLinkStrategyTest.class, "intToLong", MethodType.methodType(long.class, int.class)));
+        CoercionMatrix coercionMatrix = new CoercionMatrix();
+        ResolverManager manager = new ResolverManager(coercionMatrix);
+
+        this.linker.addLinkStrategy(new JavaClassLinkStrategy(manager));
+        this.linker.addLinkStrategy(new JavaInstanceLinkStrategy(manager, returnFilters));
     }
 
     @Test
@@ -37,10 +47,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
 
         result = callSite.getTarget().invoke(swiss, "name");
         assertThat(result).isEqualTo("swiss");
@@ -49,10 +59,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
     }
     
     @Test
@@ -72,10 +82,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "random context", "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "random context", "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
 
         result = callSite.getTarget().invoke(swiss, "random context", "name");
         assertThat(result).isEqualTo("swiss");
@@ -84,10 +94,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "random context", "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "random context", "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
     }
 
     @Test
@@ -283,6 +293,51 @@ public class JavaLinkStrategyTest {
         Object meltResult = callCallSite.getTarget().invoke( boundMethod, null, new Object[] { "taco" } );
         
         assertThat( meltResult ).isEqualTo( "melting for: taco" );
+    }
+
+    @Test
+    public void testBoundMethod_withCoersion() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod:getAge", DynamicMethod.class, Cheese.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        BoundDynamicMethod boundMethod = ((DynamicMethod) callSite.getTarget().invoke(swiss)).bind(swiss);
+
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+
+        Object result = callCallSite.getTarget().invoke(boundMethod, swiss, new Object[] {});
+
+        assertThat( result ).isEqualTo( 2L );
+    }
+
+    @Test
+    public void testMethod_withCoersion() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod:getAge", DynamicMethod.class, Cheese.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        DynamicMethod boundMethod = (DynamicMethod) callSite.getTarget().invoke(swiss);
+
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+
+        Object result = callCallSite.getTarget().invoke(boundMethod, swiss, new Object[] {});
+
+        assertThat( result ).isEqualTo( 2L );
+    }
+
+    @Test
+    public void testMethod_withCoersionAndVoidReturnType() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod:setAge", DynamicMethod.class, Cheese.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        DynamicMethod boundMethod = (DynamicMethod) callSite.getTarget().invoke(swiss);
+
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+
+        Object result = callCallSite.getTarget().invoke(boundMethod, swiss, new Object[] { 4 });
+
+        assertThat( result ).isNull();
     }
 
     @Test
