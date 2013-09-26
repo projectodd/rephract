@@ -7,14 +7,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ReturnFilters {
-    private final MethodHandle nop;
+    private final MethodHandle noOp;
     private final Map<Class<?>, MethodHandle> filters = new HashMap<>();
 
-    private static void nop() {}
+    static void noOp() {}
 
     public ReturnFilters() {
         try {
-            this.nop = MethodHandles.lookup().findStatic(ReturnFilters.class, "nop", MethodType.methodType(void.class));
+            this.noOp = MethodHandles.lookup().findStatic(ReturnFilters.class, "noOp", MethodType.methodType(void.class));
         } catch (NoSuchMethodException | IllegalAccessException e) {
             throw new RuntimeException(e);
         }
@@ -24,21 +24,45 @@ public class ReturnFilters {
         filters.put(clazz, handle);
     }
 
-    public MethodHandle getReturnFilter(MethodHandle handle) {
-        Class<?> returnType = handle.type().returnType();
-        if (filters.containsKey(returnType)) {
-            return filters.get(returnType);
+    public MethodHandle getReturnFilter(Class<?> returnType) {
+        MethodHandle result = getMethodHandleInner(returnType);
+        if (result == null) {
+            for (Class<?> iface : returnType.getInterfaces()) {
+                result = getMethodHandleInner(iface);
+                if (result != null) {
+                    break;
+                }
+            }
+        }
+
+        if (result == null) {
+            return inferReturnFilter(returnType);
         } else {
-            return inferReturnFilter(handle);
+            return result;
         }
     }
 
-    private MethodHandle inferReturnFilter(MethodHandle handle) {
-        Class<?> returnType = handle.type().returnType();
+    private MethodHandle getMethodHandleInner(Class<?> returnType) {
+        if (filters.containsKey(returnType)) {
+            return filters.get(returnType);
+        } else {
+            return null;
+        }
+    }
+
+    public MethodHandle getReturnFilter(MethodHandle handle) {
+        return getReturnFilter(handle.type().returnType());
+    }
+
+    private MethodHandle inferReturnFilter(Class<?> returnType) {
         if(returnType == void.class) {
-            return nop;
+            return noOp;
         } else {
             return MethodHandles.identity(returnType);
         }
+    }
+
+    MethodHandle getNoOp() {
+        return noOp;
     }
 }
