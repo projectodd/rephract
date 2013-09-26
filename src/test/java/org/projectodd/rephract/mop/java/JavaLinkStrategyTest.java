@@ -301,7 +301,7 @@ public class JavaLinkStrategyTest {
     }
 
     @Test
-    public void testBoundMethod_withCoersion() throws Throwable {
+    public void testBoundMethod_withCoercion() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getMethod:getAge", DynamicMethod.class, Cheese.class);
 
         Cheese swiss = new Cheese("swiss", 2);
@@ -316,7 +316,7 @@ public class JavaLinkStrategyTest {
     }
 
     @Test
-    public void testMethod_withCoersion() throws Throwable {
+    public void testMethod_withCoercion() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getMethod:getAge", DynamicMethod.class, Cheese.class);
 
         Cheese swiss = new Cheese("swiss", 2);
@@ -331,7 +331,7 @@ public class JavaLinkStrategyTest {
     }
 
     @Test
-    public void testMethod_withCoersionAndVoidReturnType() throws Throwable {
+    public void testMethod_withCoercionAndVoidReturnType() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getMethod:setAge", DynamicMethod.class, Cheese.class);
 
         Cheese swiss = new Cheese("swiss", 2);
@@ -346,7 +346,7 @@ public class JavaLinkStrategyTest {
     }
 
     @Test
-    public void testClassMethod_callWithCoersion() throws Throwable {
+    public void testClassMethod_callWithCoercion() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
 
         DynamicMethod method = ((DynamicMethod) callSite.getTarget().invoke(NumberThing.class, "intMethod"));
@@ -359,7 +359,7 @@ public class JavaLinkStrategyTest {
     }
 
     @Test
-    public void testClassProperty_withCoersion() throws Throwable {
+    public void testClassProperty_withCoercion() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getProperty:FOO", Object.class, Object.class, String.class);
 
         Object result = callSite.getTarget().invoke(NumberThing.class, "FOO");
