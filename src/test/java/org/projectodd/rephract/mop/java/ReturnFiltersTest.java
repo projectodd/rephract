@@ -7,11 +7,21 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.fest.assertions.Assertions.assertThat;
 
 public class ReturnFiltersTest {
+    public static int iterableToInt(Iterable iterable) {
+        int i = 0;
+        for (Object o : iterable) {
+            i++;
+        }
+        return i;
+    }
+
     public static int listToInt(List list) {
         return list.size();
     }
@@ -21,11 +31,13 @@ public class ReturnFiltersTest {
     }
 
     private MethodHandle listToInt;
+    private MethodHandle iterableToInt;
     private MethodHandle list;
 
     @Before
     public void before() throws Exception {
         listToInt = MethodHandles.lookup().findStatic(ReturnFiltersTest.class, "listToInt", MethodType.methodType(int.class, List.class));
+        iterableToInt = MethodHandles.lookup().findStatic(ReturnFiltersTest.class, "iterableToInt", MethodType.methodType(int.class, Iterable.class));
         list = MethodHandles.lookup().findStatic(ReturnFiltersTest.class, "list", MethodType.methodType(List.class));
     }
 
@@ -69,5 +81,17 @@ public class ReturnFiltersTest {
         MethodHandle returnFilter = filters.getReturnFilter(void.class);
 
         assertThat(returnFilter).isEqualTo(filters.getNoOp());
+    }
+
+    @Test
+    public void shouldPreferListConversionOverIterableConversion() {
+        ReturnFilters filters = new ReturnFilters();
+        filters.addReturnFilter(List.class, listToInt);
+        filters.addReturnFilter(Iterable.class, iterableToInt);
+
+        assertThat(filters.getReturnFilter(ArrayList.class)).isEqualTo(listToInt);
+        assertThat(filters.getReturnFilter(Iterable.class)).isEqualTo(iterableToInt);
+        assertThat(filters.getReturnFilter(Set.class)).isEqualTo(iterableToInt);
+        assertThat(filters.getReturnFilter(HashSet.class)).isEqualTo(iterableToInt);
     }
 }
