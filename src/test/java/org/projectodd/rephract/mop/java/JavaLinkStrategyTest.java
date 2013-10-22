@@ -1,23 +1,38 @@
 package org.projectodd.rephract.mop.java;
 
-import static org.fest.assertions.Assertions.*;
-
-import java.lang.invoke.CallSite;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.projectodd.rephract.RephractLinker;
+
+import java.lang.invoke.CallSite;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 public class JavaLinkStrategyTest {
     
     private RephractLinker linker;
 
+    public static long intToLong(int value) {
+        return (long) value;
+    }
+
+    public static PersonWrapper personToWrapper(Person person) {
+        return new PersonWrapper(person);
+    }
+
     @Before
     public void setUp() throws NoSuchMethodException, IllegalAccessException {
         this.linker = new RephractLinker();
-        ResolverManager manager = new ResolverManager();
-        this.linker.addLinkStrategy(new JavaClassLinkStrategy( manager ));
-        this.linker.addLinkStrategy(new JavaInstanceLinkStrategy( manager ));
+        ReturnFilters returnFilters = new ReturnFilters();
+        returnFilters.addReturnFilter(int.class, MethodHandles.lookup().findStatic(JavaLinkStrategyTest.class, "intToLong", MethodType.methodType(long.class, int.class)));
+        returnFilters.addReturnFilter(Person.class, MethodHandles.lookup().findStatic(JavaLinkStrategyTest.class, "personToWrapper", MethodType.methodType(PersonWrapper.class, Person.class)));
+        CoercionMatrix coercionMatrix = new CoercionMatrix();
+        ResolverManager manager = new ResolverManager(coercionMatrix);
+
+        this.linker.addLinkStrategy(new JavaClassLinkStrategy(manager, returnFilters));
+        this.linker.addLinkStrategy(new JavaInstanceLinkStrategy(manager, returnFilters));
     }
 
     @Test
@@ -37,10 +52,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
 
         result = callSite.getTarget().invoke(swiss, "name");
         assertThat(result).isEqualTo("swiss");
@@ -49,10 +64,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
     }
     
     @Test
@@ -72,10 +87,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "random context", "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "random context", "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
 
         result = callSite.getTarget().invoke(swiss, "random context", "name");
         assertThat(result).isEqualTo("swiss");
@@ -84,10 +99,10 @@ public class JavaLinkStrategyTest {
         assertThat(result).isEqualTo("bob");
         
         result = callSite.getTarget().invoke( swiss, "random context", "age" );
-        assertThat(result).isEqualTo(2);
+        assertThat(result).isEqualTo(2L);
         
         result = callSite.getTarget().invoke( bob, "random context", "age" );
-        assertThat(result).isEqualTo(39);
+        assertThat(result).isEqualTo(39L);
     }
 
     @Test
@@ -286,6 +301,73 @@ public class JavaLinkStrategyTest {
     }
 
     @Test
+    public void testBoundMethod_withCoercion() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod:getAge", DynamicMethod.class, Cheese.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        BoundDynamicMethod boundMethod = ((DynamicMethod) callSite.getTarget().invoke(swiss)).bind(swiss);
+
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+
+        Object result = callCallSite.getTarget().invoke(boundMethod, swiss, new Object[] {});
+
+        assertThat( result ).isEqualTo( 2L );
+    }
+
+    @Test
+    public void testMethod_withCoercion() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod:getAge", DynamicMethod.class, Cheese.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        DynamicMethod boundMethod = (DynamicMethod) callSite.getTarget().invoke(swiss);
+
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+
+        Object result = callCallSite.getTarget().invoke(boundMethod, swiss, new Object[] {});
+
+        assertThat( result ).isEqualTo(2L);
+    }
+
+    @Test
+    public void testMethod_withCoercionAndVoidReturnType() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod:setAge", DynamicMethod.class, Cheese.class);
+
+        Cheese swiss = new Cheese("swiss", 2);
+
+        DynamicMethod boundMethod = (DynamicMethod) callSite.getTarget().invoke(swiss);
+
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+
+        Object result = callCallSite.getTarget().invoke(boundMethod, swiss, new Object[] { 4 });
+
+        assertThat( result ).isNull();
+    }
+
+    @Test
+    public void testClassMethod_callWithCoercion() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, String.class);
+
+        DynamicMethod method = ((DynamicMethod) callSite.getTarget().invoke(NumberThing.class, "intMethod"));
+
+        CallSite callCallSite = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
+
+        Object result = callCallSite.getTarget().invoke(method, NumberThing.class, new Object[] { 2 });
+
+        assertThat( result ).isEqualTo(2L);
+    }
+
+    @Test
+    public void testClassProperty_withCoercion() throws Throwable {
+        CallSite callSite = linker.bootstrap("dyn:getProperty:FOO", Object.class, Object.class, String.class);
+
+        Object result = callSite.getTarget().invoke(NumberThing.class, "FOO");
+
+        assertThat(result).isEqualTo((long) NumberThing.FOO);
+    }
+
+    @Test
     public void testBoundMethodWithArrayParameter() throws Throwable {
         CallSite callSite = linker.bootstrap("dyn:getMethod:melt", Object.class, Object.class);
 
@@ -379,13 +461,13 @@ public class JavaLinkStrategyTest {
         CallSite callSite = linker.bootstrap("dyn:getMethod", Object.class, Object.class, Object.class);
         NumberThing n1 = new NumberThing();
         Object longMethod = callSite.getTarget().invoke(n1, "longMethod");
-        Object intMethod = callSite.getTarget().invoke(n1, "intMethod");
+        Object longToString = callSite.getTarget().invoke(n1, "longToString");
         for (int i = 0; i < 10000; i++) {
             CallSite site = linker.bootstrap("dyn:call", Object.class, Object.class, Object.class, Object[].class);
             Object resultA = site.getTarget().invoke(longMethod, n1, new Object[]{String.valueOf(i)});
             assertThat(resultA).isInstanceOf(Long.class);
 
-            Object resultB = site.getTarget().invoke(intMethod, n1, new Object[]{i});
+            Object resultB = site.getTarget().invoke(longToString, n1, new Object[]{i});
             assertThat(resultB).isInstanceOf(String.class);
         }
     }
@@ -488,9 +570,9 @@ public class JavaLinkStrategyTest {
         result = callSite.getTarget().invoke( Person.class, new Object[] { "bob", 39 } );
         
         assertThat( result ).isNotNull();
-        assertThat( result ).isInstanceOf(Person.class);
-        assertThat( ((Person)result).getName() ).isEqualTo( "bob" );
-        assertThat( ((Person)result).getAge() ).isEqualTo( 39 );
+        assertThat( result ).isInstanceOf(PersonWrapper.class);
+        assertThat( ((PersonWrapper)result).getInner().getName() ).isEqualTo("bob");
+        assertThat( ((PersonWrapper)result).getInner().getAge() ).isEqualTo( 39 );
         
         result = callSite.getTarget().invoke( Cheese.class, new Object[] { "swiss", 2 } );
         
@@ -502,9 +584,9 @@ public class JavaLinkStrategyTest {
         result = callSite.getTarget().invoke( Person.class, new Object[] { "bob", 39 } );
         
         assertThat( result ).isNotNull();
-        assertThat( result ).isInstanceOf(Person.class);
-        assertThat( ((Person)result).getName() ).isEqualTo( "bob" );
-        assertThat( ((Person)result).getAge() ).isEqualTo( 39 );
+        assertThat( result ).isInstanceOf(PersonWrapper.class);
+        assertThat( ((PersonWrapper)result).getInner().getName() ).isEqualTo( "bob" );
+        assertThat( ((PersonWrapper)result).getInner().getAge() ).isEqualTo( 39 );
         
     }
     
@@ -525,9 +607,9 @@ public class JavaLinkStrategyTest {
         result = callSite.getTarget().invoke( Person.class, "random context", new Object[] { "bob", 39 } );
         
         assertThat( result ).isNotNull();
-        assertThat( result ).isInstanceOf(Person.class);
-        assertThat( ((Person)result).getName() ).isEqualTo( "bob" );
-        assertThat( ((Person)result).getAge() ).isEqualTo( 39 );
+        assertThat( result ).isInstanceOf(PersonWrapper.class);
+        assertThat( ((PersonWrapper)result).getInner().getName() ).isEqualTo("bob");
+        assertThat( ((PersonWrapper)result).getInner().getAge() ).isEqualTo(39);
         
         result = callSite.getTarget().invoke( Cheese.class, "random context", new Object[] { "swiss", 2 } );
         
@@ -539,10 +621,10 @@ public class JavaLinkStrategyTest {
         result = callSite.getTarget().invoke( Person.class, "random context", new Object[] { "bob", 39 } );
         
         assertThat( result ).isNotNull();
-        assertThat( result ).isInstanceOf(Person.class);
-        assertThat( ((Person)result).getName() ).isEqualTo( "bob" );
-        assertThat( ((Person)result).getAge() ).isEqualTo( 39 );
-        
+        assertThat( result ).isInstanceOf(PersonWrapper.class);
+        assertThat( ((PersonWrapper)result).getInner().getAge() ).isEqualTo(39);
+        assertThat( ((PersonWrapper)result).getInner().getName() ).isEqualTo("bob");
+
     }
 
     @Test

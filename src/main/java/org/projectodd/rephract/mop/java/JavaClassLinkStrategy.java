@@ -13,18 +13,20 @@ import com.headius.invokebinder.Binder;
 public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
 
     private ResolverManager manager;
+    private ReturnFilters returnFilters;
 
     public JavaClassLinkStrategy() throws NoSuchMethodException, IllegalAccessException {
-        this(new ResolverManager());
+        this(new ResolverManager(), new ReturnFilters());
     }
 
-    public JavaClassLinkStrategy(ResolverManager manager) {
-        this(new NullLinkLogger(), manager);
+    public JavaClassLinkStrategy(ResolverManager manager, ReturnFilters returnFilters) {
+        this(new NullLinkLogger(), manager, returnFilters);
     }
 
-    public JavaClassLinkStrategy(LinkLogger logger, ResolverManager manager) {
+    public JavaClassLinkStrategy(LinkLogger logger, ResolverManager manager, ReturnFilters returnFilters) {
         super(logger);
         this.manager = manager;
+        this.returnFilters = returnFilters;
     }
 
     @Override
@@ -49,6 +51,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
         MethodHandle method = binder
                 .drop(0, 2)
                 .convert(Object.class, receiver.getClass())
+                .filterReturn(returnFilters.getReturnFilter(reader))
                 .invoke(reader);
 
         return new StrategicLink(method, getReceiverClassAndNameGuard((Class<?>) receiver, propName, guardBinder));
@@ -140,6 +143,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
                 .drop(0)
                 .spread(spreadTypes)
                 .filter(0, plan.getFilters())
+                .filterReturn(returnFilters.getReturnFilter(plan.getMethodHandle()))
                 .invoke(plan.getMethodHandle());
 
         MethodHandle guard = getConstructGuard((Class<?>) receiver, args, guardBinder);
@@ -169,6 +173,7 @@ public class JavaClassLinkStrategy extends NonContextualLinkStrategy {
                     .drop(0, 2)
                     .spread(spreadTypes)
                     .filter(0, plan.getFilters())
+                    .filterReturn(returnFilters.getReturnFilter(plan.getMethodHandle()))
                     .invoke(plan.getMethodHandle());
 
             MethodHandle guard = getCallGuard(self, dynamicMethod, args, guardBinder);
