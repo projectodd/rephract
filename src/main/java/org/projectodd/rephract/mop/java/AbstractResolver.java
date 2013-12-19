@@ -80,7 +80,11 @@ public class AbstractResolver {
             if (!Modifier.isFinal(field.getModifiers())) {
                 writer.addMethodHandle(lookup.unreflectSetter(field));
             }
-            this.propertyReaders.put(name, lookup.unreflectGetter(field));
+            if(Modifier.isStatic(field.getModifiers()) && Modifier.isFinal(field.getModifiers())) {
+                this.propertyReaders.put(name, MethodHandles.constant(field.getType(), field.get(null)));
+            } else {
+                this.propertyReaders.put(name, lookup.unreflectGetter(field));
+            }
         } catch (IllegalAccessException e) {
             e.printStackTrace();
             // ignore
