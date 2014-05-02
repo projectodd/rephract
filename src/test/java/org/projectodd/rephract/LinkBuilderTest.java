@@ -2,6 +2,7 @@ package org.projectodd.rephract;
 
 import org.junit.Test;
 import org.projectodd.rephract.builder.LinkBuilder;
+import org.projectodd.rephract.filters.Filters;
 import org.projectodd.rephract.invokers.SimpleInvoker;
 
 import static java.lang.invoke.MethodType.methodType;
@@ -21,7 +22,7 @@ public class LinkBuilderTest {
         String howdy = "howdy";
 
         Link link = builder.insert(0, howdy)
-                .guard(isSame(howdy))
+                .guardWith(isSame(howdy))
                 .call(new PrintAndReturnInvoker());
         assertThat(link).isNotNull();
 
@@ -33,7 +34,7 @@ public class LinkBuilderTest {
     public void testNonManipulation() throws Throwable {
         LinkBuilder builder = new LinkBuilder(methodType(String.class, String.class));
 
-        Link link = builder.guard(isEqual("howdy"))
+        Link link = builder.guardWith(isEqual("howdy"))
                 .call(new PrintAndReturnInvoker());
         assertThat(link).isNotNull();
 
@@ -58,9 +59,9 @@ public class LinkBuilderTest {
 
         Link link = builder
                 .insert(0, howdy)
-                .guard(isSame(howdy))
+                .guardWith(isSame(howdy))
                 .drop(0)
-                .guard(isSame(hello))
+                .guardWith(isSame(hello))
                 .call(new PrintAndReturnInvoker());
         assertThat(link).isNotNull();
 
@@ -73,6 +74,28 @@ public class LinkBuilderTest {
         } catch (PreconditionFailedException e) {
             // expected and correct
         }
+    }
+
+    @Test
+    public void testSubManipulation() throws Throwable {
+
+        LinkBuilder builder = new LinkBuilder(methodType(Object.class, Object.class));
+
+        String howdy = "howdy";
+
+        Link link = builder
+                .insert(0, howdy)
+                .guardWith(isSame(howdy))
+                .drop(0)
+                .guard().filter(0, Filters.string())
+                    .with(isEqual("42"))
+                .call(new PrintAndReturnInvoker());
+        assertThat(link).isNotNull();
+
+        Object result = link.tryCall(42);
+        assertThat(result).isInstanceOf(Integer.class);
+        assertThat(result).isEqualTo(42);
+
     }
 
     public static final class PrintAndReturnInvoker extends SimpleInvoker {

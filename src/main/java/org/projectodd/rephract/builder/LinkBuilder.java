@@ -29,9 +29,21 @@ public class LinkBuilder {
         return this.binder;
     }
 
-    public LinkBuilder guard(Guard guard) throws Exception {
+    public LinkBuilder guardWith(Guard guard) throws Exception {
         MethodHandle methodHandle = this.binder.guardBinder().invoke(guard.methodHandle(this.binder.guardBinder().type()));
+        return guardWith(methodHandle);
+    }
+
+    LinkBuilder guardWith(MethodHandle methodHandle) {
         return new ChildLinkBuilder( new MultiBinder( this.binder ), methodHandle );
+    }
+
+    public GuardBuilder guard() {
+        return new GuardBuilder( this, this.binder.guardBinder() );
+    }
+
+    public GuardBuilder guard(int...reorder) {
+        return new GuardBuilder( this, this.binder.guardBinder().permute(reorder) );
     }
 
     public Link call(Invoker invoker) throws Exception {

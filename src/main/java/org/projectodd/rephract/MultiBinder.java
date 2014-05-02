@@ -57,7 +57,7 @@ public class MultiBinder {
     }
 
     public MultiBinder printType() {
-        System.out.println("invokers: ");
+        System.out.println("invoke: ");
         invokeBinder.printType();
         System.out.println("guard: ");
         guardBinder.printType();

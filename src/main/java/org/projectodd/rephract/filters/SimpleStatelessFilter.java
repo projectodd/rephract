@@ -1,4 +1,6 @@
-package org.projectodd.rephract.guards;
+package org.projectodd.rephract.filters;
+
+import org.projectodd.rephract.guards.Guard;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
@@ -8,15 +10,15 @@ import static java.lang.invoke.MethodHandles.lookup;
 /**
  * @author Bob McWhirter
  */
-public class SimpleStatelessGuard implements Guard {
+public class SimpleStatelessFilter implements Filter {
 
     private final String name;
 
-    public SimpleStatelessGuard() {
-        this( "guard" );
+    public SimpleStatelessFilter() {
+        this( "filter" );
     }
 
-    public SimpleStatelessGuard(String name) {
+    public SimpleStatelessFilter(String name) {
         this.name = name;
     }
 

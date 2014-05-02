@@ -22,7 +22,7 @@ public class ChildLinkBuilder extends LinkBuilder {
     }
 
     @Override
-    public LinkBuilder guard(Guard guard) throws Exception {
+    public LinkBuilder guardWith(Guard guard) throws Exception {
         MethodHandle methodHandle = binder().guardBinder().invoke(guard.methodHandle(binder().guardBinder().type()));
         methodHandle = MethodHandles.guardWithTest( this.guard, methodHandle, Guards.FALSE.methodHandle(binder().guardInputType()));
         return new ChildLinkBuilder( new MultiBinder( binder() ), methodHandle );
