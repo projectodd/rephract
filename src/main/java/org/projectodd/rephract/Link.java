@@ -5,6 +5,7 @@ import org.projectodd.rephract.guards.Guards;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
+import java.util.Arrays;
 
 /**
  * @author Bob McWhirter
@@ -27,16 +28,27 @@ public class Link {
         return this.target;
     }
 
-    public Object tryCall(Object... args) throws Throwable {
+    public boolean test(Object... args) throws Throwable {
+        System.err.println( "TEST: " + Arrays.asList( args ) );
+        boolean result = (boolean) this.guard.invokeWithArguments(args);
+        System.err.println( " > " + result );
+        return result;
+    }
+
+    public Object invoke(Object...args) throws Throwable {
+        System.err.println( "INVOKE: " + Arrays.asList( args ));
+        return this.target.invokeWithArguments(args);
+    }
+
+    public Object tryInvoke(Object... args) throws Throwable {
         Class<?>[] argTypes = new Class<?>[args.length];
         for (int i = 0; i < args.length; ++i) {
             argTypes[i] = args[i].getClass();
         }
 
-        boolean result = (boolean) this.guard.invokeWithArguments(args);
-        if (!result) {
+        if (!test(args)) {
             throw new PreconditionFailedException();
         }
-        return this.target.invokeWithArguments(args);
+        return invoke(args);
     }
 }

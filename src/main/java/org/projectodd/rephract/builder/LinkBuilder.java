@@ -3,12 +3,15 @@ package org.projectodd.rephract.builder;
 
 import org.projectodd.rephract.Link;
 import org.projectodd.rephract.MultiBinder;
+import org.projectodd.rephract.filters.Filter;
 import org.projectodd.rephract.guards.Guard;
 import org.projectodd.rephract.invokers.Invoker;
 
 import java.io.PrintStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
+
+import static java.lang.invoke.MethodType.methodType;
 
 /**
  * @author Bob McWhirter
@@ -34,7 +37,7 @@ public class LinkBuilder {
         return guardWith(methodHandle);
     }
 
-    LinkBuilder guardWith(MethodHandle methodHandle) {
+    LinkBuilder guardWith(MethodHandle methodHandle) throws Exception {
         return new ChildLinkBuilder( new MultiBinder( this.binder ), methodHandle );
     }
 
@@ -46,7 +49,7 @@ public class LinkBuilder {
         return new GuardBuilder( this, this.binder.guardBinder().permute(reorder) );
     }
 
-    public Link call(Invoker invoker) throws Exception {
+    public Link invoke(Invoker invoker) throws Exception {
         return new Link(null, this.binder.invokeBinder().invoke(invoker.methodHandle(this.binder.invokeBinder().type())));
     }
 
@@ -61,6 +64,11 @@ public class LinkBuilder {
 
     public LinkBuilder filter(int index, MethodHandle... functions) {
         binder.filter(index, functions);
+        return this;
+    }
+
+    public LinkBuilder filter(int index, Filter filter) throws Exception {
+        binder.filter(index, filter.methodHandle( methodType( Object.class, Object.class ) ) );
         return this;
     }
 
@@ -91,6 +99,12 @@ public class LinkBuilder {
 
     public LinkBuilder insert(int index, Object... values) {
         binder.insert(index, values);
+        return this;
+    }
+
+    public LinkBuilder insert(int index, Filter filter) throws Exception {
+        binder.insert( index, new Class[]{ Object.class }, new Object[] { null } );
+        binder.filter( index, filter.methodHandle(methodType(Object.class, Object.class)));
         return this;
     }
 

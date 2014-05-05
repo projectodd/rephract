@@ -28,7 +28,13 @@ public class ChildLinkBuilder extends LinkBuilder {
         return new ChildLinkBuilder( new MultiBinder( binder() ), methodHandle );
     }
 
-    public Link call(Invoker invoker) throws Exception {
+    LinkBuilder guardWith(MethodHandle methodHandle) throws Exception {
+        methodHandle = MethodHandles.guardWithTest( this.guard, methodHandle, Guards.FALSE.methodHandle(binder().guardInputType()));
+        return new ChildLinkBuilder( new MultiBinder( binder() ), methodHandle );
+    }
+
+    public Link invoke(Invoker invoker) throws Exception {
+        //return new Link(this.guard, binder().invokeBinder().invoke(invoker.methodHandle(binder().invokeBinder().type())));
         return new Link(this.guard, binder().invokeBinder().invoke(invoker.methodHandle(binder().invokeBinder().type())));
     }
 }

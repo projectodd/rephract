@@ -23,10 +23,10 @@ public class LinkBuilderTest {
 
         Link link = builder.insert(0, howdy)
                 .guardWith(isSame(howdy))
-                .call(new PrintAndReturnInvoker());
+                .invoke(new PrintAndReturnInvoker());
         assertThat(link).isNotNull();
 
-        Object result = link.tryCall();
+        Object result = link.tryInvoke();
         assertThat(result).isSameAs(howdy);
     }
 
@@ -35,13 +35,13 @@ public class LinkBuilderTest {
         LinkBuilder builder = new LinkBuilder(methodType(String.class, String.class));
 
         Link link = builder.guardWith(isEqual("howdy"))
-                .call(new PrintAndReturnInvoker());
+                .invoke(new PrintAndReturnInvoker());
         assertThat(link).isNotNull();
 
-        Object result = link.tryCall("howdy");
+        Object result = link.tryInvoke("howdy");
         assertThat(result).isEqualTo("howdy");
         try {
-            link.tryCall("not-howdy");
+            link.tryInvoke("not-howdy");
             fail("should have thrown precondition-failed");
         } catch (PreconditionFailedException e) {
             // expected and correct
@@ -62,14 +62,14 @@ public class LinkBuilderTest {
                 .guardWith(isSame(howdy))
                 .drop(0)
                 .guardWith(isSame(hello))
-                .call(new PrintAndReturnInvoker());
+                .invoke(new PrintAndReturnInvoker());
         assertThat(link).isNotNull();
 
-        Object result = link.tryCall(hello);
+        Object result = link.tryInvoke(hello);
         assertThat(hello).isSameAs(hello);
 
         try {
-            link.tryCall( whatup );
+            link.tryInvoke(whatup);
             fail("should have thrown precondition-failed");
         } catch (PreconditionFailedException e) {
             // expected and correct
@@ -89,10 +89,10 @@ public class LinkBuilderTest {
                 .drop(0)
                 .guard().filter(0, Filters.string())
                     .with(isEqual("42"))
-                .call(new PrintAndReturnInvoker());
+                .invoke(new PrintAndReturnInvoker());
         assertThat(link).isNotNull();
 
-        Object result = link.tryCall(42);
+        Object result = link.tryInvoke(42);
         assertThat(result).isInstanceOf(Integer.class);
         assertThat(result).isEqualTo(42);
 
