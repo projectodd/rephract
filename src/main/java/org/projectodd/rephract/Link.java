@@ -29,14 +29,10 @@ public class Link {
     }
 
     public boolean test(Object... args) throws Throwable {
-        System.err.println( "TEST: " + Arrays.asList( args ) );
-        boolean result = (boolean) this.guard.invokeWithArguments(args);
-        System.err.println( " > " + result );
-        return result;
+        return (boolean) this.guard.invokeWithArguments(args);
     }
 
     public Object invoke(Object...args) throws Throwable {
-        System.err.println( "INVOKE: " + Arrays.asList( args ));
         return this.target.invokeWithArguments(args);
     }
 

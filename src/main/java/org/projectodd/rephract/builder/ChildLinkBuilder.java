@@ -16,25 +16,28 @@ public class ChildLinkBuilder extends LinkBuilder {
 
     private final MethodHandle guard;
 
-    public ChildLinkBuilder(MultiBinder binder, MethodHandle guard) {
-        super(binder);
+    public ChildLinkBuilder(MultiBinder binder, Object[] arguments, MethodHandle guard) {
+        super(binder, arguments);
         this.guard = guard;
     }
 
     @Override
     public LinkBuilder guardWith(Guard guard) throws Exception {
         MethodHandle methodHandle = binder().guardBinder().invoke(guard.methodHandle(binder().guardBinder().type()));
-        methodHandle = MethodHandles.guardWithTest( this.guard, methodHandle, Guards.FALSE.methodHandle(binder().guardInputType()));
-        return new ChildLinkBuilder( new MultiBinder( binder() ), methodHandle );
+        methodHandle = MethodHandles.guardWithTest(this.guard, methodHandle, Guards.FALSE.methodHandle(binder().guardInputType()));
+        return new ChildLinkBuilder(new MultiBinder(binder()), arguments(), methodHandle);
     }
 
     LinkBuilder guardWith(MethodHandle methodHandle) throws Exception {
-        methodHandle = MethodHandles.guardWithTest( this.guard, methodHandle, Guards.FALSE.methodHandle(binder().guardInputType()));
-        return new ChildLinkBuilder( new MultiBinder( binder() ), methodHandle );
+        methodHandle = MethodHandles.guardWithTest(this.guard, methodHandle, Guards.FALSE.methodHandle(binder().guardInputType()));
+        return new ChildLinkBuilder(new MultiBinder(binder()), arguments(), methodHandle);
     }
 
     public Link invoke(Invoker invoker) throws Exception {
-        //return new Link(this.guard, binder().invokeBinder().invoke(invoker.methodHandle(binder().invokeBinder().type())));
         return new Link(this.guard, binder().invokeBinder().invoke(invoker.methodHandle(binder().invokeBinder().type())));
+    }
+
+    public Link invoke(MethodHandle invoker) {
+        return new Link(this.guard, binder().invokeBinder().invoke(invoker));
     }
 }

@@ -72,7 +72,7 @@ public abstract class Linker {
         return null;
     }
 
-    public Link linkGetMethod(Invocation invocation, String propertyName) throws Exception {
+    public Link linkGetMethod(Invocation invocation, String methodName) throws Exception {
         return null;
     }
 

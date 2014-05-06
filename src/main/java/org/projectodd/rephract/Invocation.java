@@ -37,7 +37,7 @@ public class Invocation {
         this.type = type;
         this.parameter = parameter;
         this.methodType = methodType;
-        this.builder = new LinkBuilder( methodType );
+        this.builder = new LinkBuilder( methodType, arguments );
         this.receiver = receiver;
         this.arguments = arguments;
     }

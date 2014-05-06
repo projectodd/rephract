@@ -117,6 +117,7 @@ class LinkPlan {
     }
     
     public void replan(Link link) throws NoSuchMethodException, IllegalAccessException {
+        //System.err.println( "*** REPLAN" );
         if (link != null) {
             this.links.add(link);
         }

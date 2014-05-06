@@ -19,7 +19,6 @@ public class InstanceOfGuard extends AbstractStatefulSingleArgumentGuard<Object>
     }
 
     public boolean guard(Object input) {
-        System.err.println( input + " vs " + this.cls );
         return (this.cls.isInstance(input));
     }
 }

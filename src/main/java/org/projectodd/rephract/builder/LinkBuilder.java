@@ -18,18 +18,25 @@ import static java.lang.invoke.MethodType.methodType;
  */
 public class LinkBuilder {
 
-    private MultiBinder binder;
+    private final MultiBinder binder;
+    private final Object[] arguments;
 
-    public LinkBuilder(MethodType inputType) {
+    public LinkBuilder(MethodType inputType, Object[] arguments) {
         this.binder = new MultiBinder(inputType);
+        this.arguments = arguments;
     }
 
-    protected LinkBuilder(MultiBinder binder) {
+    protected LinkBuilder(MultiBinder binder, Object[] arguments) {
         this.binder = binder;
+        this.arguments = arguments;
     }
 
     protected MultiBinder binder() {
         return this.binder;
+    }
+
+    protected Object[] arguments() {
+        return this.arguments;
     }
 
     public LinkBuilder guardWith(Guard guard) throws Exception {
@@ -38,7 +45,7 @@ public class LinkBuilder {
     }
 
     LinkBuilder guardWith(MethodHandle methodHandle) throws Exception {
-        return new ChildLinkBuilder( new MultiBinder( this.binder ), methodHandle );
+        return new ChildLinkBuilder( new MultiBinder( this.binder ), this.arguments, methodHandle );
     }
 
     public GuardBuilder guard() {
@@ -51,6 +58,10 @@ public class LinkBuilder {
 
     public Link invoke(Invoker invoker) throws Exception {
         return new Link(null, this.binder.invokeBinder().invoke(invoker.methodHandle(this.binder.invokeBinder().type())));
+    }
+
+    public Link invoke(MethodHandle invoker) throws Exception {
+        return new Link(null, this.binder.invokeBinder().invoke(invoker));
     }
 
     // ----------------------------------------------------------------------
