@@ -1,6 +1,7 @@
 package org.projectodd.rephract.java;
 
 import org.projectodd.rephract.Link;
+import org.projectodd.rephract.SmartLink;
 import org.projectodd.rephract.builder.LinkBuilder;
 import org.projectodd.rephract.guards.Guard;
 import org.projectodd.rephract.invokers.Invoker;
@@ -16,23 +17,14 @@ import static java.lang.invoke.MethodType.methodType;
 /**
  * @author Bob McWhirter
  */
-public class UnboundInstanceMethodCallLink extends Link implements Guard {
+public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
 
-    private LinkBuilder builder;
     private InvocationPlan plan;
 
     public UnboundInstanceMethodCallLink(LinkBuilder builder) throws Exception {
-        this.builder = builder;
+        super( builder );
         this.builder = this.builder.guardWith(this);
     }
-
-    public MethodHandle test(Object... args) throws Throwable {
-        if ((boolean) guard().invokeWithArguments(args)) {
-            return target();
-        }
-        return null;
-    }
-
 
     public boolean guard(Object receiver, Object self, Object[] arguments) {
         if (!(receiver instanceof DynamicMethod)) {

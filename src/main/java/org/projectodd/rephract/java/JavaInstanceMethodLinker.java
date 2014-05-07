@@ -24,21 +24,7 @@ public class JavaInstanceMethodLinker extends BaseJavaLinker {
 
     @Override
     public Link linkGetMethod(Invocation invocation, String methodName) throws Exception {
-
-        Object receiver = invocation.receiver();
-        Resolver resolver = getResolver(receiver.getClass());
-        DynamicMethod dynamicMethod = resolver.getInstanceResolver().getMethod(methodName);
-
-        if (dynamicMethod == null) {
-            return null;
-        }
-
-        return invocation.builder()
-                .guardWith(isInstanceOf(receiver.getClass()))
-                .guard(1).with(isEqual(methodName))
-                .drop(0, 2)
-                .insert(0, dynamicMethod)
-                .invoke(MethodHandles.identity(DynamicMethod.class));
+        return new UnboundInstanceMethodGetLink( invocation.builder(), this.resolverManager );
     }
 
     @Override
