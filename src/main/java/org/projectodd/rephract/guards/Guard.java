@@ -8,6 +8,6 @@ import java.lang.invoke.MethodType;
  */
 public interface Guard {
 
-    MethodHandle methodHandle(MethodType inputType) throws Exception;
+    MethodHandle guardMethodHandle(MethodType inputType) throws Exception;
 
 }

@@ -20,7 +20,7 @@ public class SimpleStatefulGuard implements Guard {
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType inputType) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle guardMethodHandle(MethodType inputType) throws NoSuchMethodException, IllegalAccessException {
         return lookup().findVirtual( getClass(), name, inputType ).bindTo( this );
     }
 }

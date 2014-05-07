@@ -24,7 +24,7 @@ public class GuardBuilder {
     }
 
     public LinkBuilder with(Guard guard) throws Exception {
-        MethodHandle methodHandle = this.binder.invoke(guard.methodHandle(this.binder.type()));
+        MethodHandle methodHandle = this.binder.invoke(guard.guardMethodHandle(this.binder.type()));
         return this.parent.guardWith(methodHandle);
     }
 

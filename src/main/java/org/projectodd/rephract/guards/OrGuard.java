@@ -14,9 +14,9 @@ public class OrGuard extends AbstractBinaryGuard {
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType inputType) throws Exception {
-        return MethodHandles.guardWithTest(this.lhs.methodHandle(inputType),
-                Guards.TRUE.methodHandle( inputType ),
-                this.rhs.methodHandle(inputType));
+    public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
+        return MethodHandles.guardWithTest(this.lhs.guardMethodHandle(inputType),
+                Guards.TRUE.guardMethodHandle(inputType),
+                this.rhs.guardMethodHandle(inputType));
     }
 }

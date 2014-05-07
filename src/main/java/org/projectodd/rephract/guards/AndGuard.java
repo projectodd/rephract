@@ -1,7 +1,5 @@
 package org.projectodd.rephract.guards;
 
-import com.headius.invokebinder.Binder;
-
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
@@ -16,9 +14,9 @@ public class AndGuard extends AbstractBinaryGuard {
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType inputType) throws Exception {
-        return MethodHandles.guardWithTest(this.lhs.methodHandle(inputType),
-                this.rhs.methodHandle(inputType),
-                Guards.FALSE.methodHandle( inputType ) );
+    public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
+        return MethodHandles.guardWithTest(this.lhs.guardMethodHandle(inputType),
+                this.rhs.guardMethodHandle(inputType),
+                Guards.FALSE.guardMethodHandle(inputType) );
     }
 }

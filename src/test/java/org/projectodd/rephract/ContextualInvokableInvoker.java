@@ -15,7 +15,7 @@ public class ContextualInvokableInvoker implements Invoker {
 
     public static ContextualInvokableInvoker INSTANCE = new ContextualInvokableInvoker();
     @Override
-    public MethodHandle methodHandle(MethodType type) throws Exception {
+    public MethodHandle invokerMethodHandle() throws Exception {
         return lookup().findVirtual( ContextualInvokable.class, "invoke", methodType( Object.class, Object.class, Object.class, Object[].class) );
     }
 }

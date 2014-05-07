@@ -1,4 +1,4 @@
-package org.projectodd.rephract.java;
+package org.projectodd.rephract.java.reflect;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;

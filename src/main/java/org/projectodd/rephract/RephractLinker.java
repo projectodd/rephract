@@ -60,9 +60,10 @@ public class RephractLinker {
                 invocation = new Invocation(each.type(), plan.methodType(), receiver, args);
                 link = linker.link(invocation);
                 if (link != null) {
-                    if (link.test(args)) {
-                        plan.replan(link);
-                        return link.invoke(args);
+                    MethodHandle target = link.test( args );
+                    if (target != null) {
+                        plan.replan(link.guard(), target);
+                        return target.invokeWithArguments(args);
                     }
                 }
             }

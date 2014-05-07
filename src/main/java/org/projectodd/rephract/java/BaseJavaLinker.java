@@ -1,6 +1,8 @@
 package org.projectodd.rephract.java;
 
 import org.projectodd.rephract.NonContextualLinker;
+import org.projectodd.rephract.java.reflect.Resolver;
+import org.projectodd.rephract.java.reflect.ResolverManager;
 
 /**
  * @author Bob McWhirter

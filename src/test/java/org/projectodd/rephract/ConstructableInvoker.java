@@ -15,7 +15,7 @@ public class ConstructableInvoker implements Invoker {
 
     public static ConstructableInvoker INSTANCE = new ConstructableInvoker();
     @Override
-    public MethodHandle methodHandle(MethodType type) throws Exception {
+    public MethodHandle invokerMethodHandle() throws Exception {
         return lookup().findVirtual( Constructable.class, "construct", methodType( Object.class, Object[].class) );
     }
 }

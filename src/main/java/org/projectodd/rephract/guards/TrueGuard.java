@@ -31,7 +31,7 @@ public class TrueGuard implements Guard {
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType inputType) throws Exception {
+    public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
         Binder binder = Binder.from(inputType);
         return binder.drop(0, inputType.parameterCount())
                 .constant(true);

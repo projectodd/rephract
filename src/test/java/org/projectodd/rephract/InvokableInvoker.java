@@ -15,7 +15,7 @@ public class InvokableInvoker implements Invoker {
 
     public static InvokableInvoker INSTANCE = new InvokableInvoker();
     @Override
-    public MethodHandle methodHandle(MethodType type) throws Exception {
+    public MethodHandle invokerMethodHandle() throws Exception {
         return lookup().findVirtual( Invokable.class, "invoke", methodType( Object.class, Object.class, Object[].class) );
     }
 }

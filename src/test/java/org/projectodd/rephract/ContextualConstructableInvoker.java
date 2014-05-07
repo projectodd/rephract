@@ -15,7 +15,7 @@ public class ContextualConstructableInvoker implements Invoker {
 
     public static ContextualConstructableInvoker INSTANCE = new ContextualConstructableInvoker();
     @Override
-    public MethodHandle methodHandle(MethodType type) throws Exception {
+    public MethodHandle invokerMethodHandle() throws Exception {
         return lookup().findVirtual( ContextualConstructable.class, "construct", methodType( Object.class, Object.class, Object[].class) );
     }
 }

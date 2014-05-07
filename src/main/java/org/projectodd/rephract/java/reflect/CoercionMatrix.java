@@ -1,4 +1,4 @@
-package org.projectodd.rephract.java;
+package org.projectodd.rephract.java.reflect;
 
 import com.headius.invokebinder.Binder;
 import java.lang.invoke.MethodHandle;

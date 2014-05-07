@@ -17,7 +17,7 @@ public class MapGetInvoker implements Invoker {
     public static MapGetInvoker INSTANCE = new MapGetInvoker();
 
     @Override
-    public MethodHandle methodHandle(MethodType type) throws Exception {
+    public MethodHandle invokerMethodHandle() throws Exception {
         return lookup().findVirtual( Map.class, "get", methodType( Object.class, Object.class ) );
     }
 }

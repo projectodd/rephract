@@ -3,8 +3,10 @@ package org.projectodd.rephract.builder;
 
 import org.projectodd.rephract.Link;
 import org.projectodd.rephract.MultiBinder;
+import org.projectodd.rephract.SimpleLink;
 import org.projectodd.rephract.filters.Filter;
 import org.projectodd.rephract.guards.Guard;
+import org.projectodd.rephract.guards.Guards;
 import org.projectodd.rephract.invokers.Invoker;
 
 import java.io.PrintStream;
@@ -19,33 +21,30 @@ import static java.lang.invoke.MethodType.methodType;
 public class LinkBuilder {
 
     private final MultiBinder binder;
-    private final Object[] arguments;
 
-    public LinkBuilder(MethodType inputType, Object[] arguments) {
+    public LinkBuilder(MethodType inputType) {
         this.binder = new MultiBinder(inputType);
-        this.arguments = arguments;
     }
 
-    protected LinkBuilder(MultiBinder binder, Object[] arguments) {
+    protected LinkBuilder(MultiBinder binder) {
         this.binder = binder;
-        this.arguments = arguments;
     }
 
     protected MultiBinder binder() {
         return this.binder;
     }
 
-    protected Object[] arguments() {
-        return this.arguments;
+    public MethodHandle getGuard() throws Exception {
+        return Guards.TRUE.guardMethodHandle(this.binder.guardInputType());
     }
 
     public LinkBuilder guardWith(Guard guard) throws Exception {
-        MethodHandle methodHandle = this.binder.guardBinder().invoke(guard.methodHandle(this.binder.guardBinder().type()));
+        MethodHandle methodHandle = this.binder.guardBinder().invoke(guard.guardMethodHandle(this.binder.guardBinder().type()));
         return guardWith(methodHandle);
     }
 
     LinkBuilder guardWith(MethodHandle methodHandle) throws Exception {
-        return new ChildLinkBuilder( new MultiBinder( this.binder ), this.arguments, methodHandle );
+        return new ChildLinkBuilder( new MultiBinder( this.binder ), methodHandle );
     }
 
     public GuardBuilder guard() {
@@ -57,11 +56,11 @@ public class LinkBuilder {
     }
 
     public Link invoke(Invoker invoker) throws Exception {
-        return new Link(null, this.binder.invokeBinder().invoke(invoker.methodHandle(this.binder.invokeBinder().type())));
+        return new SimpleLink(null, this.binder.invokeBinder().invoke(invoker.invokerMethodHandle()));
     }
 
     public Link invoke(MethodHandle invoker) throws Exception {
-        return new Link(null, this.binder.invokeBinder().invoke(invoker));
+        return new SimpleLink(null, this.binder.invokeBinder().invoke(invoker));
     }
 
     // ----------------------------------------------------------------------

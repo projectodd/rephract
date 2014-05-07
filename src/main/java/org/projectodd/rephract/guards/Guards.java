@@ -20,7 +20,7 @@ public class Guards {
         }
 
         MethodType inputType = MethodType.methodType(boolean.class, argTypes);
-        return (boolean) guard.methodHandle(inputType).invokeWithArguments(args);
+        return (boolean) guard.guardMethodHandle(inputType).invokeWithArguments(args);
     }
 
     public static Guard and(Guard lhs, Guard rhs) {

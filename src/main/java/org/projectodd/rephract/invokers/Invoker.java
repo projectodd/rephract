@@ -8,5 +8,5 @@ import java.lang.invoke.MethodType;
  */
 public interface Invoker {
 
-    MethodHandle methodHandle(MethodType type) throws Exception;
+    MethodHandle invokerMethodHandle() throws Exception;
 }

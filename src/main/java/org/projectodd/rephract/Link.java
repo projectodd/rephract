@@ -2,6 +2,7 @@ package org.projectodd.rephract;
 
 import org.projectodd.rephract.guards.Guard;
 import org.projectodd.rephract.guards.Guards;
+import org.projectodd.rephract.invokers.Invoker;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
@@ -10,30 +11,16 @@ import java.util.Arrays;
 /**
  * @author Bob McWhirter
  */
-public class Link {
+public abstract class Link {
 
-    private final MethodHandle guard;
-    private final MethodHandle target;
+    public abstract MethodHandle guard() throws Exception;
+    public abstract MethodHandle target() throws Exception;
 
-    public Link(MethodHandle guard, MethodHandle target) {
-        this.guard = guard;
-        this.target = target;
-    }
-
-    public MethodHandle guard() {
-        return this.guard;
-    }
-
-    public MethodHandle target() {
-        return this.target;
-    }
-
-    public boolean test(Object... args) throws Throwable {
-        return (boolean) this.guard.invokeWithArguments(args);
-    }
-
-    public Object invoke(Object...args) throws Throwable {
-        return this.target.invokeWithArguments(args);
+    public MethodHandle test(Object... args) throws Throwable {
+        if (!(boolean) guard().invokeWithArguments(args)) {
+            return null;
+        }
+        return target();
     }
 
     public Object tryInvoke(Object... args) throws Throwable {
@@ -42,9 +29,10 @@ public class Link {
             argTypes[i] = args[i].getClass();
         }
 
-        if (!test(args)) {
+        MethodHandle target = test(args);
+        if (target == null) {
             throw new PreconditionFailedException();
         }
-        return invoke(args);
+        return target.invokeWithArguments(args);
     }
 }

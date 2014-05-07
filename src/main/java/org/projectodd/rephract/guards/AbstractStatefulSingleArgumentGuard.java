@@ -21,10 +21,10 @@ public abstract class AbstractStatefulSingleArgumentGuard<T> extends SimpleState
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType inputType) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle guardMethodHandle(MethodType inputType) throws NoSuchMethodException, IllegalAccessException {
         Binder binder = Binder.from(inputType);
 
-        MethodHandle target = super.methodHandle(methodType(boolean.class, this.argType));
+        MethodHandle target = super.guardMethodHandle(methodType(boolean.class, this.argType));
 
         return binder.permute(this.argPos)
                 .convert(target.type())

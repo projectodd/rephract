@@ -30,4 +30,8 @@ public class MockObject {
     public void foo(long arg) {
         this.longFoo = arg;
     }
+
+    public String toString() {
+        return "[MockObject: stringFoo=" + this.stringFoo + "; intFoo=" + this.intFoo + "; longFoo=" + this.longFoo + "]";
+    }
 }

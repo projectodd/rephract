@@ -22,7 +22,7 @@ public class SimpleInvoker implements Invoker {
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType type) throws Exception {
+    public MethodHandle invokerMethodHandle() throws Exception {
         return lookup().findVirtual( getClass(), this.name, this.inputType ).bindTo( this );
     }
 }

@@ -33,8 +33,8 @@ public class NotGuard implements Guard {
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType inputType) throws Exception {
-        return MethodHandles.filterReturnValue( this.guard.methodHandle(inputType), METHOD_HANDLE );
+    public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
+        return MethodHandles.filterReturnValue( this.guard.guardMethodHandle(inputType), METHOD_HANDLE );
     }
 
     public static boolean filter(boolean input) {

@@ -21,7 +21,7 @@ public class SimpleStatelessGuard implements Guard {
     }
 
     @Override
-    public MethodHandle methodHandle(MethodType inputType) throws NoSuchMethodException, IllegalAccessException {
+    public MethodHandle guardMethodHandle(MethodType inputType) throws NoSuchMethodException, IllegalAccessException {
         return lookup().findStatic(getClass(), name, inputType);
     }
 }

@@ -2,6 +2,10 @@ package org.projectodd.rephract.java;
 
 import org.projectodd.rephract.Invocation;
 import org.projectodd.rephract.Link;
+import org.projectodd.rephract.java.reflect.DynamicMethod;
+import org.projectodd.rephract.java.reflect.InvocationPlan;
+import org.projectodd.rephract.java.reflect.Resolver;
+import org.projectodd.rephract.java.reflect.ResolverManager;
 
 import java.lang.invoke.MethodHandle;
 

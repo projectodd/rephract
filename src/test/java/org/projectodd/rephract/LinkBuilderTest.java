@@ -17,7 +17,7 @@ public class LinkBuilderTest {
 
     @Test
     public void testManipulation() throws Throwable {
-        LinkBuilder builder = new LinkBuilder(methodType(String.class), new Object[]{});
+        LinkBuilder builder = new LinkBuilder(methodType(String.class));
 
         String howdy = "howdy";
 
@@ -32,7 +32,7 @@ public class LinkBuilderTest {
 
     @Test
     public void testNonManipulation() throws Throwable {
-        LinkBuilder builder = new LinkBuilder(methodType(String.class, String.class), new Object[]{"howdy"});
+        LinkBuilder builder = new LinkBuilder(methodType(String.class, String.class));
 
         Link link = builder.guardWith(isEqual("howdy"))
                 .invoke(new PrintAndReturnInvoker());
@@ -55,7 +55,7 @@ public class LinkBuilderTest {
         String hello = "hello";
         String whatup = "whatup";
 
-        LinkBuilder builder = new LinkBuilder(methodType(String.class, String.class), new Object[]{ "hello"});
+        LinkBuilder builder = new LinkBuilder(methodType(String.class, String.class));
 
         Link link = builder
                 .insert(0, howdy)
@@ -79,7 +79,7 @@ public class LinkBuilderTest {
     @Test
     public void testSubManipulation() throws Throwable {
 
-        LinkBuilder builder = new LinkBuilder(methodType(Object.class, Object.class), new Object[]{42});
+        LinkBuilder builder = new LinkBuilder(methodType(Object.class, Object.class));
 
         String howdy = "howdy";
 
