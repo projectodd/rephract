@@ -1,24 +1,24 @@
-package org.projectodd.rephract.java;
+package org.projectodd.rephract.java.instance;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.projectodd.rephract.*;
+import org.projectodd.rephract.java.Dog;
+import org.projectodd.rephract.java.Person;
 
 import java.lang.invoke.CallSite;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.fest.assertions.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
-public class JavaPropertyLinkerTest {
+public class JavaInstancePropertyLinkerTest {
 
     private RephractLinker linker;
 
     @Before
     public void setUp() throws NoSuchMethodException, IllegalAccessException {
         this.linker = new RephractLinker();
-        this.linker.addLinker(new JavaPropertyLinker());
+        this.linker.addLinker(new JavaInstancePropertyLinker());
     }
 
     @Test

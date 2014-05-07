@@ -1,37 +1,35 @@
-package org.projectodd.rephract.java;
+package org.projectodd.rephract.java.clazz;
 
 import org.projectodd.rephract.builder.LinkBuilder;
 import org.projectodd.rephract.guards.Guard;
-import org.projectodd.rephract.java.reflect.DynamicMethod;
+import org.projectodd.rephract.java.AbstractResolvingLink;
 import org.projectodd.rephract.java.reflect.Resolver;
 import org.projectodd.rephract.java.reflect.ResolverManager;
 
 import java.lang.invoke.MethodHandle;
-import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.lang.invoke.MethodType.methodType;
-import static org.projectodd.rephract.guards.Guards.isEqual;
-import static org.projectodd.rephract.guards.Guards.isInstanceOf;
 
 /**
  * @author Bob McWhirter
  */
-public class PropertyGetLink extends AbstractResolvingLink implements Guard {
+public class ClassPropertyGetLink extends AbstractResolvingLink implements Guard {
 
     private MethodHandle reader;
 
-    public PropertyGetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
+    public ClassPropertyGetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
         super( builder, resolverManager );
         this.builder = this.builder.guardWith(this);
     }
 
     public boolean guard(Object receiver, String propertyName) {
-
-
-        Resolver resolver = resolve(receiver.getClass());
-        MethodHandle reader = resolver.getInstanceResolver().getPropertyReader(propertyName);
+        if ( !( receiver instanceof Class ) ) {
+            return false;
+        }
+        Resolver resolver = resolve((Class<?>) receiver);
+        MethodHandle reader = resolver.getClassResolver().getPropertyReader(propertyName);
 
         if (reader == null) {
             return false;
@@ -50,7 +48,7 @@ public class PropertyGetLink extends AbstractResolvingLink implements Guard {
     @Override
     public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
         return lookup()
-                .findVirtual(PropertyGetLink.class, "guard", methodType(boolean.class, Object.class, String.class))
+                .findVirtual(ClassPropertyGetLink.class, "guard", methodType(boolean.class, Object.class, String.class))
                 .bindTo(this);
     }
 
@@ -60,7 +58,7 @@ public class PropertyGetLink extends AbstractResolvingLink implements Guard {
 
     public MethodHandle target() throws Exception {
         return this.builder
-                .drop(1)
+                .drop(0,2)
                 .invoke(this.reader).target();
     }
 }

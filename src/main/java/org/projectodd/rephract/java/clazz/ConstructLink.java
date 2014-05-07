@@ -1,12 +1,11 @@
-package org.projectodd.rephract.java;
+package org.projectodd.rephract.java.clazz;
 
-import org.projectodd.rephract.Link;
-import org.projectodd.rephract.SmartLink;
 import org.projectodd.rephract.builder.LinkBuilder;
 import org.projectodd.rephract.guards.Guard;
-import org.projectodd.rephract.invokers.Invoker;
-import org.projectodd.rephract.java.reflect.DynamicMethod;
+import org.projectodd.rephract.java.AbstractResolvingLink;
+import org.projectodd.rephract.java.reflect.DynamicConstructor;
 import org.projectodd.rephract.java.reflect.InvocationPlan;
+import org.projectodd.rephract.java.reflect.ResolverManager;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
@@ -17,25 +16,27 @@ import static java.lang.invoke.MethodType.methodType;
 /**
  * @author Bob McWhirter
  */
-public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
+public class ConstructLink extends AbstractResolvingLink implements Guard {
 
     private InvocationPlan plan;
 
-    public UnboundInstanceMethodCallLink(LinkBuilder builder) throws Exception {
-        super( builder );
+    public ConstructLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
+        super( builder, resolverManager );
         this.builder = this.builder.guardWith(this);
     }
 
-    public boolean guard(Object receiver, Object self, Object[] arguments) {
-        if (!(receiver instanceof DynamicMethod)) {
+    public boolean guard(Object receiver, Object[] arguments) {
+        if (!(receiver instanceof Class)) {
             return false;
         }
 
-        if (((DynamicMethod) receiver).isStatic()) {
+        DynamicConstructor ctor = resolve((Class<?>) receiver).getClassResolver().getConstructor();
+
+        if ( ctor == null ) {
             return false;
         }
 
-        InvocationPlan candidatePlan = ((DynamicMethod) receiver).findMethodInvoationPlan(arguments);
+        InvocationPlan candidatePlan = ctor.findConstructorInvocationPlan( arguments );
 
         if (candidatePlan == null) {
             return false;
@@ -53,7 +54,7 @@ public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
     @Override
     public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
         return lookup()
-                .findVirtual(UnboundInstanceMethodCallLink.class, "guard", methodType(boolean.class, Object.class, Object.class, Object[].class))
+                .findVirtual(ConstructLink.class, "guard", methodType(boolean.class, Object.class, Object[].class))
                 .bindTo(this);
     }
 
@@ -63,13 +64,14 @@ public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
 
     public MethodHandle target() throws Exception {
         Class<?>[] paramTypes = this.plan.getMethodHandle().type().parameterArray();
-        Class<?>[] spreadTypes = new Class<?>[paramTypes.length - 1];
+
+        Class<?>[] spreadTypes = new Class<?>[paramTypes.length];
         for (int i = 0; i < spreadTypes.length; ++i) {
-            spreadTypes[i] = paramTypes[i + 1];
+            spreadTypes[i] = paramTypes[i];
         }
 
         return this.builder
-                .drop(0)
+                .drop(0, 1)
                 .spread(spreadTypes)
                 .invoke(this.plan.getMethodHandle()).target();
     }

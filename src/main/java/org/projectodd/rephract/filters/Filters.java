@@ -6,8 +6,13 @@ package org.projectodd.rephract.filters;
 public class Filters {
 
     private static final Filter TOSTRING = new ToStringFilter();
+    private static final Filter TOINTEGER = new ToStringFilter();
 
     public static Filter string() {
         return TOSTRING;
+    }
+
+    public static Filter integer() {
+        return TOINTEGER;
     }
 }

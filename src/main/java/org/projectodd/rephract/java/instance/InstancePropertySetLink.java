@@ -1,7 +1,8 @@
-package org.projectodd.rephract.java;
+package org.projectodd.rephract.java.instance;
 
 import org.projectodd.rephract.builder.LinkBuilder;
 import org.projectodd.rephract.guards.Guard;
+import org.projectodd.rephract.java.AbstractResolvingLink;
 import org.projectodd.rephract.java.reflect.DynamicMethod;
 import org.projectodd.rephract.java.reflect.InvocationPlan;
 import org.projectodd.rephract.java.reflect.Resolver;
@@ -17,11 +18,11 @@ import static org.projectodd.rephract.guards.Guards.isInstanceOf;
 /**
  * @author Bob McWhirter
  */
-public class PropertySetLink extends AbstractResolvingLink implements Guard {
+public class InstancePropertySetLink extends AbstractResolvingLink implements Guard {
 
     private InvocationPlan plan;
 
-    public PropertySetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
+    public InstancePropertySetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
         super( builder, resolverManager );
         this.builder = this.builder.guardWith(this);
     }
@@ -53,7 +54,7 @@ public class PropertySetLink extends AbstractResolvingLink implements Guard {
     @Override
     public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
         return lookup()
-                .findVirtual(PropertySetLink.class, "guard", methodType(boolean.class, Object.class, String.class, Object.class))
+                .findVirtual(InstancePropertySetLink.class, "guard", methodType(boolean.class, Object.class, String.class, Object.class))
                 .bindTo(this);
     }
 

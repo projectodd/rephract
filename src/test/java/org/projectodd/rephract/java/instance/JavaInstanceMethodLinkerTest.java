@@ -1,8 +1,12 @@
-package org.projectodd.rephract.java;
+package org.projectodd.rephract.java.instance;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.projectodd.rephract.RephractLinker;
+import org.projectodd.rephract.java.Dog;
+import org.projectodd.rephract.java.MockObject;
+import org.projectodd.rephract.java.Person;
+import org.projectodd.rephract.java.instance.JavaInstanceMethodLinker;
 import org.projectodd.rephract.java.reflect.DynamicMethod;
 
 import java.lang.invoke.CallSite;

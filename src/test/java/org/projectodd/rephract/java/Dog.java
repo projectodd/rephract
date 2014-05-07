@@ -5,6 +5,12 @@ package org.projectodd.rephract.java;
  */
 public class Dog {
 
+    public static String translation = "Chien";
+
+    public static String bark(String language) {
+        return "bark in " +language + "!";
+    }
+
     private String name;
     private int age;
 
