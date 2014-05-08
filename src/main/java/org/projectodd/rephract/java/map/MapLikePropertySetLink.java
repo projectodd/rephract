@@ -1,4 +1,4 @@
-package org.projectodd.rephract.java.instance;
+package org.projectodd.rephract.java.map;
 
 import org.projectodd.rephract.builder.LinkBuilder;
 import org.projectodd.rephract.guards.Guard;
@@ -9,33 +9,38 @@ import org.projectodd.rephract.java.reflect.Resolver;
 import org.projectodd.rephract.java.reflect.ResolverManager;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.invoke.MethodType;
+import java.util.Arrays;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.lang.invoke.MethodType.methodType;
-import static org.projectodd.rephract.guards.Guards.isInstanceOf;
 
 /**
  * @author Bob McWhirter
  */
-public class InstancePropertySetLink extends AbstractResolvingLink implements Guard {
+public class MapLikePropertySetLink extends AbstractResolvingLink implements Guard {
 
     private InvocationPlan plan;
 
-    public InstancePropertySetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
+    public MapLikePropertySetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
         super( builder, resolverManager );
         this.builder = this.builder.guardWith(this);
     }
 
     public boolean guard(Object receiver, String propertyName, Object value) {
         Resolver resolver = resolve(receiver.getClass());
-        DynamicMethod writer = resolver.getInstanceResolver().getPropertyWriter(propertyName);
+        DynamicMethod writer = resolver.getInstanceResolver().getMethod( "put" );
+
+        System.err.println( "WRITER: " + writer );
 
         if (writer == null) {
             return false;
         }
 
-        InvocationPlan plan = writer.findMethodInvoationPlan(value);
+        InvocationPlan plan = writer.findMethodInvoationPlan(propertyName, value);
+
+        System.err.println( "plan: " + plan );
 
         if (plan == null) {
             return false;
@@ -54,7 +59,7 @@ public class InstancePropertySetLink extends AbstractResolvingLink implements Gu
     @Override
     public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
         return lookup()
-                .findVirtual(InstancePropertySetLink.class, "guard", methodType(boolean.class, Object.class, String.class, Object.class))
+                .findVirtual(MapLikePropertySetLink.class, "guard", methodType(boolean.class, Object.class, String.class, Object.class))
                 .bindTo(this);
     }
 
@@ -63,12 +68,16 @@ public class InstancePropertySetLink extends AbstractResolvingLink implements Gu
     }
 
     public MethodHandle target() throws Exception {
+        System.err.println( "PUT FILTERS: " + Arrays.asList( this.plan.getFilters() ) );
         MethodHandle methodHandle = this.plan.getMethodHandle();
+        System.err.println( "HANDLE: " + methodHandle );
 
         return this.builder
-                .drop(1)
-                .convert(methodHandle.type().returnType(), methodHandle.type().parameterArray())
-                .filter(1, this.plan.getFilters() )
+                .printType()
+                .convert( methodHandle.type().returnType(), methodHandle.type().parameterArray() )
+                .printType()
+                .filter(1, this.plan.getFilters())
+                .printType()
                 .invoke(this.plan.getMethodHandle()).target();
     }
 }

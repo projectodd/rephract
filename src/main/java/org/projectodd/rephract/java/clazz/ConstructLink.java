@@ -73,6 +73,7 @@ public class ConstructLink extends AbstractResolvingLink implements Guard {
         return this.builder
                 .drop(0, 1)
                 .spread(spreadTypes)
+                .filter( 0, this.plan.getFilters() )
                 .invoke(this.plan.getMethodHandle()).target();
     }
 }

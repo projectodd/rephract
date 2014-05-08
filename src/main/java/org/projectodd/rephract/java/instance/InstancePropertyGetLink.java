@@ -59,6 +59,7 @@ public class InstancePropertyGetLink extends AbstractResolvingLink implements Gu
     public MethodHandle target() throws Exception {
         return this.builder
                 .drop(1)
+                .convert( this.reader.type().returnType(), this.reader.type().parameterArray() )
                 .invoke(this.reader).target();
     }
 }

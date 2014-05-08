@@ -167,12 +167,12 @@ public abstract class NonContextualLinker extends Linker {
 
         //  Arguments must be one of:
         //
-        //  [ object(receiver) self object[](args) ]
-        //  [ object(receiver) context self object[](args) ]
+        //  [ object(receiver) object[](args) ]
+        //  [ object(receiver) context object[](args) ]
         //
         //  Should result in:
         //
-        //  [ object(receiver) object(self) object[](args) ]
+        //  [ object(receiver) object[](args) ]
         //
 
         MethodType methodType = invocation.methodType();
@@ -181,15 +181,20 @@ public abstract class NonContextualLinker extends Linker {
         Object self = null;
         Object[] callArgs = null;
 
-        if (paramCount == 3) {
+        //System.out.println("CONSTRUCT: " + paramCount);
+        //invocation.builder().printType();
+
+        if (paramCount == 2) {
             // no context
             // good to go
-        } else if (paramCount == 4) {
+        } else if (paramCount == 3) {
             // with context
             invocation.builder().drop( 1 );
         }
 
-        log("[CONSTRUCT] receiver=%s", invocation.receiver() );
+        //invocation.builder().printType();
+        //System.out.println( "--- END CONSTRUCT" );
+        log("[CONSTRUCT] receiver=%s", invocation.receiver());
 
         return linkConstruct(invocation);
     }

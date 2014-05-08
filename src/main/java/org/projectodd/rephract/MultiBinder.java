@@ -57,16 +57,14 @@ public class MultiBinder {
     }
 
     public MultiBinder printType() {
-        System.out.println("invoke: ");
-        invokeBinder.printType();
-        System.out.println("guard: ");
-        guardBinder.printType();
+        printType( System.err );
         return this;
     }
 
-
     public MultiBinder printType(PrintStream ps) {
+        ps.println("invoke: ");
         invokeBinder.printType(ps);
+        ps.println("guard: ");
         guardBinder.printType(ps);
         return this;
     }
@@ -109,7 +107,7 @@ public class MultiBinder {
 
     public MultiBinder convert(Class returnType, Class... argTypes) {
         this.invokeBinder = invokeBinder.convert(returnType, argTypes);
-        this.guardBinder = guardBinder.convert(returnType, argTypes);
+        this.guardBinder = guardBinder.convert(boolean.class, argTypes);
         return this;
     }
 

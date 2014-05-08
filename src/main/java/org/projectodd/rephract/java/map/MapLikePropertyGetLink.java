@@ -1,4 +1,4 @@
-package org.projectodd.rephract.java.instance;
+package org.projectodd.rephract.java.map;
 
 import org.projectodd.rephract.builder.LinkBuilder;
 import org.projectodd.rephract.guards.Guard;
@@ -13,36 +13,35 @@ import java.lang.invoke.MethodType;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.lang.invoke.MethodType.methodType;
-import static org.projectodd.rephract.guards.Guards.isInstanceOf;
 
 /**
  * @author Bob McWhirter
  */
-public class InstancePropertySetLink extends AbstractResolvingLink implements Guard {
+public class MapLikePropertyGetLink extends AbstractResolvingLink implements Guard {
 
     private InvocationPlan plan;
 
-    public InstancePropertySetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
+    public MapLikePropertyGetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
         super( builder, resolverManager );
         this.builder = this.builder.guardWith(this);
     }
 
-    public boolean guard(Object receiver, String propertyName, Object value) {
+    public boolean guard(Object receiver, String propertyName) {
+        if ( propertyName.equals( "get" ) || propertyName.equals( "put" ) ) {
+            return false;
+        }
+
         Resolver resolver = resolve(receiver.getClass());
-        DynamicMethod writer = resolver.getInstanceResolver().getPropertyWriter(propertyName);
+        DynamicMethod method = resolver.getInstanceResolver().getMethod( "get" );
 
-        if (writer == null) {
+        if (method == null) {
             return false;
         }
 
-        InvocationPlan plan = writer.findMethodInvoationPlan(value);
-
-        if (plan == null) {
-            return false;
-        }
+        InvocationPlan plan = method.findMethodInvoationPlan(propertyName);
 
         if ( this.plan != null ) {
-            if ( this.plan != plan ) {
+            if ( ! this.plan.equals( plan ) ) {
                 return false;
             }
         }
@@ -54,7 +53,7 @@ public class InstancePropertySetLink extends AbstractResolvingLink implements Gu
     @Override
     public MethodHandle guardMethodHandle(MethodType inputType) throws Exception {
         return lookup()
-                .findVirtual(InstancePropertySetLink.class, "guard", methodType(boolean.class, Object.class, String.class, Object.class))
+                .findVirtual(MapLikePropertyGetLink.class, "guard", methodType(boolean.class, Object.class, String.class))
                 .bindTo(this);
     }
 
@@ -64,11 +63,10 @@ public class InstancePropertySetLink extends AbstractResolvingLink implements Gu
 
     public MethodHandle target() throws Exception {
         MethodHandle methodHandle = this.plan.getMethodHandle();
-
         return this.builder
-                .drop(1)
+                .filter( 1, this.plan.getFilters() )
                 .convert(methodHandle.type().returnType(), methodHandle.type().parameterArray())
-                .filter(1, this.plan.getFilters() )
-                .invoke(this.plan.getMethodHandle()).target();
+                .invoke(methodHandle)
+                .target();
     }
 }

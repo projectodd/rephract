@@ -12,6 +12,7 @@ import org.projectodd.rephract.invokers.Invoker;
 import java.io.PrintStream;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
+import java.util.Arrays;
 
 import static java.lang.invoke.MethodType.methodType;
 
@@ -44,15 +45,15 @@ public class LinkBuilder {
     }
 
     LinkBuilder guardWith(MethodHandle methodHandle) throws Exception {
-        return new ChildLinkBuilder( new MultiBinder( this.binder ), methodHandle );
+        return new ChildLinkBuilder(new MultiBinder(this.binder), methodHandle);
     }
 
     public GuardBuilder guard() {
-        return new GuardBuilder( this, this.binder.guardBinder() );
+        return new GuardBuilder(this, this.binder.guardBinder());
     }
 
-    public GuardBuilder guard(int...reorder) {
-        return new GuardBuilder( this, this.binder.guardBinder().permute(reorder) );
+    public GuardBuilder guard(int... reorder) {
+        return new GuardBuilder(this, this.binder.guardBinder().permute(reorder));
     }
 
     public Link invoke(Invoker invoker) throws Exception {
@@ -78,7 +79,7 @@ public class LinkBuilder {
     }
 
     public LinkBuilder filter(int index, Filter filter) throws Exception {
-        binder.filter(index, filter.methodHandle( methodType( Object.class, Object.class ) ) );
+        binder.filter(index, filter.methodHandle(methodType(Object.class, Object.class)));
         return this;
     }
 
@@ -88,7 +89,7 @@ public class LinkBuilder {
     }
 
     public LinkBuilder printType() {
-        binder.printType();
+        binder.printType(System.err);
         return this;
     }
 
@@ -113,8 +114,8 @@ public class LinkBuilder {
     }
 
     public LinkBuilder insert(int index, Filter filter) throws Exception {
-        binder.insert( index, new Class[]{ Object.class }, new Object[] { null } );
-        binder.filter( index, filter.methodHandle(methodType(Object.class, Object.class)));
+        binder.insert(index, new Class[]{Object.class}, new Object[]{null});
+        binder.filter(index, filter.methodHandle(methodType(Object.class, Object.class)));
         return this;
     }
 
@@ -122,6 +123,7 @@ public class LinkBuilder {
         binder.convert(returnType, argTypes);
         return this;
     }
+
 
     public LinkBuilder drop(int index, int count) {
         binder.drop(index, count);

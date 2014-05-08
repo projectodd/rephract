@@ -28,7 +28,7 @@ class LinkPlan {
         this.name = name;
         this.type = type;
         determineOperations();
-        replan(null, null);
+        replan(null, null, null, null);
     }
 
     private void determineOperations() {
@@ -116,7 +116,7 @@ class LinkPlan {
         return this.lookup;
     }
 
-    public void replan(MethodHandle guard, MethodHandle target) throws NoSuchMethodException, IllegalAccessException {
+    public void replan(Linker linker, Link link, MethodHandle guard, MethodHandle target) throws NoSuchMethodException, IllegalAccessException {
         if (target != null) {
             this.links.add(new Entry(guard, target));
         }
@@ -125,7 +125,7 @@ class LinkPlan {
                 .convert(this.type.erase())
                 .collect(0, Object[].class)
                 .convert(Object.class, Object[].class)
-                .insert(0, linker)
+                .insert(0, this.linker)
                 .insert(1, this)
                 .invokeVirtual(MethodHandles.lookup(), "linkInvocation");
 
@@ -135,6 +135,8 @@ class LinkPlan {
             Entry eachLink = this.links.get(i);
             current = MethodHandles.guardWithTest(eachLink.guard, eachLink.target, current);
         }
+
+        System.err.println( "relink: " + this.callSite + ": " + this.links.size() + " : " + linker + " > " + link );
 
         this.callSite.setTarget(current);
     }

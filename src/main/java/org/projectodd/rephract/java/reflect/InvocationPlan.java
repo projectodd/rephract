@@ -21,6 +21,28 @@ public class InvocationPlan {
         return this.filters;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (!(obj instanceof InvocationPlan)) {
+            return false;
+        }
+        if (((InvocationPlan) obj).methodHandle != this.methodHandle) {
+            return false;
+        }
+
+        if ( ((InvocationPlan) obj).filters.length != this.filters.length ) {
+            return false;
+        }
+
+        for ( int i = 0 ; i < this.filters.length ; ++i ) {
+            if ( ! ((InvocationPlan) obj).filters[i].equals( this.filters[i])) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     public String toString() {
         return "[InvocationPlan: " + methodHandle + "; filters=" + Arrays.asList(this.filters) + "]";
     }
