@@ -28,19 +28,15 @@ public class UnboundInstanceMethodGetLink extends AbstractResolvingLink implemen
 
     public boolean guard(Object receiver, String methodName) {
 
-        System.err.println( this + " GET METHOD: " + methodName + " ON " + receiver + " // " + receiver.getClass() );
-
         Resolver resolver = resolve(receiver.getClass());
         DynamicMethod dynamicMethod = resolver.getInstanceResolver().getMethod(methodName);
 
         if (dynamicMethod == null) {
-            System.err.println( "dynamethod is null" );
             return false;
         }
 
         if ( this.method != null ) {
             if ( this.method != dynamicMethod) {
-                System.err.println( "dynamethod is non-matching: " + this.method.getName() );
                 return false;
             }
         }

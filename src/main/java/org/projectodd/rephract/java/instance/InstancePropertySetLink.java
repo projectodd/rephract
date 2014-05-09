@@ -23,7 +23,7 @@ public class InstancePropertySetLink extends AbstractResolvingLink implements Gu
     private InvocationPlan plan;
 
     public InstancePropertySetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
-        super( builder, resolverManager );
+        super(builder, resolverManager);
         this.builder = this.builder.guardWith(this);
     }
 
@@ -41,8 +41,8 @@ public class InstancePropertySetLink extends AbstractResolvingLink implements Gu
             return false;
         }
 
-        if ( this.plan != null ) {
-            if ( this.plan != plan ) {
+        if (this.plan != null) {
+            if (! this.plan.equals(plan)) {
                 return false;
             }
         }
@@ -68,7 +68,7 @@ public class InstancePropertySetLink extends AbstractResolvingLink implements Gu
         return this.builder
                 .drop(1)
                 .convert(methodHandle.type().returnType(), methodHandle.type().parameterArray())
-                .filter(1, this.plan.getFilters() )
+                .filter(1, this.plan.getFilters())
                 .invoke(this.plan.getMethodHandle()).target();
     }
 }

@@ -36,7 +36,7 @@ public class ClassPropertyGetLink extends AbstractResolvingLink implements Guard
         }
 
         if ( this.reader != null ) {
-            if ( this.reader != reader ) {
+            if ( ! this.reader.equals( reader ) ) {
                 return false;
             }
         }

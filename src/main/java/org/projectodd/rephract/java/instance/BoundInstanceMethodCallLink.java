@@ -29,11 +29,7 @@ public class BoundInstanceMethodCallLink extends SmartLink implements Guard {
     }
 
     public boolean guard(Object receiver, Object self, Object[] arguments) {
-        System.err.println("= Receiver: " + receiver);
-        System.err.println("= Self: " + self);
-        System.err.println("= arguments: " + Arrays.asList(arguments) );
         if (!(receiver instanceof BoundDynamicMethod)) {
-            System.err.println( "1 FALSE" );
             return false;
         }
 
@@ -41,7 +37,6 @@ public class BoundInstanceMethodCallLink extends SmartLink implements Guard {
 
         if (this.self != null) {
             if (this.self != boundSelf) {
-                System.err.println( "2 FALSE" );
                 return false;
             }
         }
@@ -49,17 +44,14 @@ public class BoundInstanceMethodCallLink extends SmartLink implements Guard {
         InvocationPlan candidatePlan = ((DynamicMethod) receiver).findMethodInvoationPlan(arguments);
 
         if (candidatePlan == null) {
-            System.err.println( "3 FALSE" );
             return false;
         }
 
         if (this.plan != null) {
-            if (this.plan != candidatePlan) {
-                System.err.println( "4 FALSE" );
+            if (! this.plan.equals( candidatePlan ) ) {
                 return false;
             }
         }
-        System.err.println( "TRUE!" );
         this.plan = candidatePlan;
         this.self = boundSelf;
         return true;
@@ -82,12 +74,6 @@ public class BoundInstanceMethodCallLink extends SmartLink implements Guard {
         for (int i = 0; i < spreadTypes.length; ++i) {
             spreadTypes[i] = Object.class;
         }
-
-        MethodHandle methodHandle = this.plan.getMethodHandle();
-
-        System.err.println("filters: " + Arrays.asList(this.plan.getFilters()));
-        System.err.println("target: " + methodHandle);
-
 
         return this.builder
                 .drop(0)

@@ -44,7 +44,7 @@ public class ClassPropertySetLink extends AbstractResolvingLink implements Guard
         }
 
         if ( this.plan != null ) {
-            if ( this.plan != plan ) {
+            if ( ! this.plan.equals( plan ) ) {
                 return false;
             }
         }

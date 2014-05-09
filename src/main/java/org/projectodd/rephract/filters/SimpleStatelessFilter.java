@@ -24,7 +24,6 @@ public class SimpleStatelessFilter implements Filter {
 
     @Override
     public MethodHandle methodHandle(MethodType inputType) throws NoSuchMethodException, IllegalAccessException {
-        System.err.println( "simple-stateless: " + inputType );
         return lookup().findStatic(getClass(), name, inputType);
     }
 }

@@ -136,7 +136,7 @@ class LinkPlan {
             current = MethodHandles.guardWithTest(eachLink.guard, eachLink.target, current);
         }
 
-        System.err.println( "relink: " + this.callSite + ": " + this.links.size() + " : " + linker + " > " + link );
+        System.err.println( " ! " + this.links.size() + " : " + linker + " > " + link );
 
         this.callSite.setTarget(current);
     }

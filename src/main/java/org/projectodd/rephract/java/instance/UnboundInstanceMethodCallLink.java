@@ -8,6 +8,7 @@ import org.projectodd.rephract.java.reflect.InvocationPlan;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodType;
+import java.util.Arrays;
 
 import static java.lang.invoke.MethodHandles.lookup;
 import static java.lang.invoke.MethodType.methodType;
@@ -33,6 +34,12 @@ public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
             return false;
         }
 
+        System.err.println( "receiver: " + receiver );
+        for ( int i = 0 ; i < arguments.length ; ++i ) {
+            System.err.println( "arg" + i + ": " + arguments[i] + " // " + arguments.getClass().getName() );
+
+        }
+
         InvocationPlan candidatePlan = ((DynamicMethod) receiver).findMethodInvoationPlan(arguments);
 
         if (candidatePlan == null) {
@@ -40,10 +47,11 @@ public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
         }
 
         if (this.plan != null) {
-            if (this.plan != candidatePlan) {
+            if ( ! this.plan.equals( candidatePlan ) ) {
                 return false;
             }
         }
+        System.err.println( "plan: " + this.plan );
         this.plan = candidatePlan;
         return true;
     }

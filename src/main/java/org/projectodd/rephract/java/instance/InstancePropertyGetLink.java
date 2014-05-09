@@ -36,7 +36,7 @@ public class InstancePropertyGetLink extends AbstractResolvingLink implements Gu
         }
 
         if ( this.reader != null ) {
-            if ( this.reader != reader ) {
+            if ( ! this.reader.equals( reader ) ) {
                 return false;
             }
         }

@@ -55,26 +55,24 @@ public class RephractLinker {
         Link link = null;
         Invocation invocation = null;
         Object receiver = (args.length >= 1 ? args[0] : null);
-        System.err.println( "**********************************" );
-        System.err.println( "**** CALLSITE: " + plan.callSite() + " // " + Arrays.asList( args ) );
+        System.err.println( "**** CALLSITE: " + plan.callSite() + " :: " + plan.links.size() + " :: " + Arrays.asList( args ));
         for (Operation each : operations) {
-            System.err.println( "**** OP : " + each );
+            System.err.println( " % " + each );
             for (Linker linker : this.linkers) {
-                System.err.println( "**** ATTEMPT LINKER: " + linker );
+                System.err.println( " > " + linker.getClass().getSimpleName() );
                 invocation = new Invocation(each.type(), plan.methodType(), receiver, args);
                 link = linker.link(invocation);
-                System.err.println( "**** INITIAL-LINK: " + link );
                 if (link != null) {
                     MethodHandle target = link.test( args );
-                    System.err.println( "**** TEST: " + target );
                     if (target != null) {
                         plan.replan(linker, link, link.guard(), target);
-                        System.err.println( "*** INVOKE: " + Arrays.asList( args ) );
                         return target.invokeWithArguments(args);
                     }
                 }
             }
         }
+        System.err.println( " ## FAIL" );
+        new Exception().printStackTrace();
 
         throw new NoSuchMethodError(plan.name() + ": " + Arrays.asList(args));
     }

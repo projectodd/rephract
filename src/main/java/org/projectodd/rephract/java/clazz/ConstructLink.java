@@ -21,7 +21,7 @@ public class ConstructLink extends AbstractResolvingLink implements Guard {
     private InvocationPlan plan;
 
     public ConstructLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
-        super( builder, resolverManager );
+        super(builder, resolverManager);
         this.builder = this.builder.guardWith(this);
     }
 
@@ -32,18 +32,18 @@ public class ConstructLink extends AbstractResolvingLink implements Guard {
 
         DynamicConstructor ctor = resolve((Class<?>) receiver).getClassResolver().getConstructor();
 
-        if ( ctor == null ) {
+        if (ctor == null) {
             return false;
         }
 
-        InvocationPlan candidatePlan = ctor.findConstructorInvocationPlan( arguments );
+        InvocationPlan candidatePlan = ctor.findConstructorInvocationPlan(arguments);
 
         if (candidatePlan == null) {
             return false;
         }
 
         if (this.plan != null) {
-            if (this.plan != candidatePlan) {
+            if (!this.plan.equals(candidatePlan)) {
                 return false;
             }
         }
@@ -73,7 +73,7 @@ public class ConstructLink extends AbstractResolvingLink implements Guard {
         return this.builder
                 .drop(0, 1)
                 .spread(spreadTypes)
-                .filter( 0, this.plan.getFilters() )
+                .filter(0, this.plan.getFilters())
                 .invoke(this.plan.getMethodHandle()).target();
     }
 }

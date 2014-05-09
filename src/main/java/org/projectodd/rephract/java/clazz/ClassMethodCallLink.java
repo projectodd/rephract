@@ -41,7 +41,7 @@ public class ClassMethodCallLink extends SmartLink implements Guard {
         }
 
         if (this.plan != null) {
-            if (this.plan != candidatePlan) {
+            if (!this.plan.equals(candidatePlan) ) {
                 return false;
             }
         }
@@ -71,6 +71,7 @@ public class ClassMethodCallLink extends SmartLink implements Guard {
         return this.builder
                 .drop(0, 2)
                 .spread(spreadTypes)
+                .filter(0, this.plan.getFilters() )
                 .invoke(this.plan.getMethodHandle()).target();
     }
 }
