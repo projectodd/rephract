@@ -34,12 +34,6 @@ public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
             return false;
         }
 
-        System.err.println( "receiver: " + receiver );
-        for ( int i = 0 ; i < arguments.length ; ++i ) {
-            System.err.println( "arg" + i + ": " + arguments[i] + " // " + arguments.getClass().getName() );
-
-        }
-
         InvocationPlan candidatePlan = ((DynamicMethod) receiver).findMethodInvoationPlan(arguments);
 
         if (candidatePlan == null) {
@@ -51,7 +45,7 @@ public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
                 return false;
             }
         }
-        System.err.println( "plan: " + this.plan );
+
         this.plan = candidatePlan;
         return true;
     }

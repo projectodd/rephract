@@ -55,11 +55,8 @@ public class RephractLinker {
         Link link = null;
         Invocation invocation = null;
         Object receiver = (args.length >= 1 ? args[0] : null);
-        System.err.println( "**** CALLSITE: " + plan.callSite() + " :: " + plan.links.size() + " :: " + Arrays.asList( args ));
         for (Operation each : operations) {
-            System.err.println( " % " + each );
             for (Linker linker : this.linkers) {
-                System.err.println( " > " + linker.getClass().getSimpleName() );
                 invocation = new Invocation(each.type(), plan.methodType(), receiver, args);
                 link = linker.link(invocation);
                 if (link != null) {
@@ -71,8 +68,6 @@ public class RephractLinker {
                 }
             }
         }
-        System.err.println( " ## FAIL" );
-        new Exception().printStackTrace();
 
         throw new NoSuchMethodError(plan.name() + ": " + Arrays.asList(args));
     }
