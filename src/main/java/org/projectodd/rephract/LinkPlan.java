@@ -117,7 +117,7 @@ class LinkPlan {
     }
 
     public void replan(Linker linker, Link link, MethodHandle guard, MethodHandle target) throws NoSuchMethodException, IllegalAccessException {
-        if (target != null) {
+        if (guard != null && target != null ) {
             this.links.add(new Entry(guard, target));
         }
 
@@ -133,7 +133,9 @@ class LinkPlan {
 
         for (int i = this.links.size() - 1; i >= 0; --i) {
             Entry eachLink = this.links.get(i);
-            current = MethodHandles.guardWithTest(eachLink.guard, eachLink.target, current);
+            if (eachLink != null) {
+                current = MethodHandles.guardWithTest(eachLink.guard, eachLink.target, current);
+            }
         }
 
         this.callSite.setTarget(current);
