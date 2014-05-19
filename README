@@ -1,0 +1,34 @@
+Rephract is a JDK7/JDK8 invokedynamic linker library.
+
+I provides an API for writing linkers against a meta-object protocol.
+
+A single RephractLinker is bootstrapped into an invokedynamic-using program,
+and each linker is allowed an opportunity to link invocations of standard 
+operations, such as
+
+  * dyn:getProperty
+  * dyn:setProperty
+  * dyn:getMethod
+  * dyn:call
+  * dyn:construct
+
+Additionally, Rephract supports the injection (or removal) of language contexts
+during the link phase, and rationalizes all forms of each MOP call into a
+predicatable format.
+
+Rephract now supports a unified Link API to make it easier to keep the linking
+logic and subsequent link-usage guard logic in sync, by having just one chunk of
+logic.
+
+For instance, see the dyn:getProperty Link for linking Java instances:
+
+  https://github.com/projectodd/rephract/blob/master/src/main/java/org/projectodd/rephract/java/instance/InstancePropertyGetLink.java
+
+Rephract ships with linkers for:
+
+  * Java classes (get/set properties, get methods, call methods, and construct instances)
+  * Java instances (get/set properties, get methods, call methods)
+  * Map-like objects (get/set 'properties' using get(key) and put(key,value)
+
+Rephract is currently used in DynJS to provide invokedynamic-based linking for
+Java integration and core Javascript dispatch.
