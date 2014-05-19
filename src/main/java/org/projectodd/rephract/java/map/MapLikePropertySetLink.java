@@ -32,15 +32,11 @@ public class MapLikePropertySetLink extends AbstractResolvingLink implements Gua
         Resolver resolver = resolve(receiver.getClass());
         DynamicMethod writer = resolver.getInstanceResolver().getMethod( "put" );
 
-        System.err.println( "WRITER: " + writer );
-
         if (writer == null) {
             return false;
         }
 
         InvocationPlan plan = writer.findMethodInvoationPlan(propertyName, value);
-
-        System.err.println( "plan: " + plan );
 
         if (plan == null) {
             return false;
@@ -73,11 +69,8 @@ public class MapLikePropertySetLink extends AbstractResolvingLink implements Gua
         System.err.println( "HANDLE: " + methodHandle );
 
         return this.builder
-                .printType()
                 .convert( methodHandle.type().returnType(), methodHandle.type().parameterArray() )
-                .printType()
                 .filter(1, this.plan.getFilters())
-                .printType()
                 .invoke(this.plan.getMethodHandle()).target();
     }
 }
