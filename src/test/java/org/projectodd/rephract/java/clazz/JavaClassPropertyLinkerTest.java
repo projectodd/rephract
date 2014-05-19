@@ -22,6 +22,7 @@ public class JavaClassPropertyLinkerTest {
 
     @Test
     public void testGetProperty() throws Throwable {
+        Dog.translation = "Chien";
         CallSite callSite = linker.bootstrap("dyn:getProperty", Object.class, Object.class, Object.class);
 
         Object result = null;
@@ -32,6 +33,7 @@ public class JavaClassPropertyLinkerTest {
 
     @Test
     public void testSetProperty() throws Throwable {
+        Dog.translation = "Chien";
         CallSite callSite = linker.bootstrap("dyn:setProperty", Object.class, Object.class, Object.class, Object.class);
 
         Object result = null;
