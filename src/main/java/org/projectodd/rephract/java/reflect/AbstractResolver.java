@@ -56,7 +56,7 @@ public class AbstractResolver {
                         this.propertyWriters.put(name, writer);
                     }
                     writer.addMethodHandle(unreflectedMethod);
-                } else if (name.startsWith("get")) {
+                } else if (name.startsWith("get") && ( unreflectedMethod.type().parameterCount() == 1 ) )  {
                     name = convertToPropertyName(name);
                     this.propertyReaders.put(name, unreflectedMethod);
                 }
