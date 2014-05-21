@@ -6,9 +6,27 @@ import java.util.Arrays;
 public abstract class ArrayCoercer {
     public Object[] coerceToObjectInternal(Object value) {
         Object[] objectArray = coerceToObject(value);
-        Class<?> target = objectArray[0].getClass();
+        Class<?> target = determineCommonClass( objectArray );
         Object[] targetArray = (Object[]) Array.newInstance(target, objectArray.length);
         return Arrays.asList(objectArray).toArray(targetArray);
+    }
+
+    protected Class<?> determineCommonClass(Object[] array) {
+        Class<?> common = null;
+        for ( int i = 0 ; i < array.length ; ++i ) {
+            if ( common == null ) {
+                common = array[i].getClass();
+                continue;
+            }
+            Class<?> compare = array[i].getClass();
+            if ( common == compare ) {
+                continue;
+            }
+            while ( ! common.isAssignableFrom( compare ) ) {
+                common = common.getSuperclass();
+            }
+        }
+        return common;
     }
 
     public abstract Object[] coerceToObject(Object value);

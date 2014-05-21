@@ -28,16 +28,24 @@ public class DynamicMethod extends AbstractDynamicMember {
     public void addMethodHandle(MethodHandle method) {
         this.methods.add(method);
     }
-    
+
     public BoundDynamicMethod bind(Object self) {
-        return new BoundDynamicMethod( self, this );
+        return new BoundDynamicMethod(self, this);
     }
-    
+
+    public Object apply(Object self, Object... args) throws Throwable {
+        InvocationPlan plan = findMethodInvoationPlan(args);
+        if (plan == null) {
+            return null;
+        }
+        return plan.getMethodHandle().bindTo(self).invokeWithArguments(args);
+    }
+
     public List<MethodHandle> getMethods() {
         return this.methods;
     }
 
-    public InvocationPlan findMethodInvoationPlan(Object...args) {
+    public InvocationPlan findMethodInvoationPlan(Object... args) {
         CoercionMatrix matrix = getCoercionMatrix();
 
         int matchedIndex = -1;
@@ -45,7 +53,8 @@ public class DynamicMethod extends AbstractDynamicMember {
         int bestDistance = Integer.MAX_VALUE;
 
         int numMethods = this.methods.size();
-        loop: for (int i = 0; i < numMethods; ++i) {
+        loop:
+        for (int i = 0; i < numMethods; ++i) {
             MethodHandle each = this.methods.get(i);
             int methodDistance = 0;
             Class<?>[] paramTypes = getPureParameterArray(each);
@@ -94,7 +103,7 @@ public class DynamicMethod extends AbstractDynamicMember {
     }
 
     public String toString() {
-        return "[DynamicMethod: name=" + this.name + "; isStatic=" + isStatic + "; methods=" + Arrays.asList( this.methods ) + "]";
+        return "[DynamicMethod: name=" + this.name + "; isStatic=" + isStatic + "; methods=" + Arrays.asList(this.methods) + "]";
     }
 
 }
