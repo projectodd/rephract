@@ -1,5 +1,7 @@
 package org.projectodd.rephract.java.reflect;
 
+import com.headius.invokebinder.Binder;
+
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -38,7 +40,12 @@ public class DynamicMethod extends AbstractDynamicMember {
         if (plan == null) {
             return null;
         }
-        return plan.getMethodHandle().bindTo(self).invokeWithArguments(args);
+        Object[] filteredArgs = new Object[ args.length ];
+        MethodHandle[] filters = plan.getFilters();
+        for ( int i = 0 ; i < args.length ; ++i ) {
+            filteredArgs[i] = filters[i].invoke( args[i] );
+        }
+        return plan.getMethodHandle().bindTo(self).invokeWithArguments(filteredArgs);
     }
 
     public List<MethodHandle> getMethods() {
