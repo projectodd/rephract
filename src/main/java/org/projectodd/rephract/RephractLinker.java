@@ -13,6 +13,7 @@ public class RephractLinker {
 
     private List<Linker> linkers = new ArrayList<>();
     private LinkLogger logger;
+    private List<LinkPlan> linkPlans = new ArrayList<>();
 
     public RephractLinker() {
         this(new NullLinkLogger());
@@ -27,6 +28,12 @@ public class RephractLinker {
         this.linkers.add(strategy);
     }
 
+    public void dumpStatistics() {
+        for ( LinkPlan each : this.linkPlans ) {
+            each.dumpStatistics();
+        }
+    }
+
     public MethodHandle getBootstrapMethodHandle() throws NoSuchMethodException, IllegalAccessException {
         Lookup lookup = MethodHandles.lookup();
         return Binder.from(CallSite.class, Lookup.class, String.class, MethodType.class)
@@ -36,7 +43,14 @@ public class RephractLinker {
 
     public CallSite bootstrap(Lookup lookup, String name, MethodType type) throws Throwable {
         MutableCallSite callSite = new MutableCallSite(type);
-        LinkPlan plan = new LinkPlan(this, callSite, lookup, name, type);
+        LinkPlan plan = new LinkPlan(this, callSite, lookup, name, type, null);
+        return plan.callSite();
+    }
+
+    public CallSite bootstrap(Lookup lookup, String name, MethodType type, String file, int line, int column) throws Throwable {
+        MutableCallSite callSite = new MutableCallSite(type);
+        LinkPlan plan = new LinkPlan(this, callSite, lookup, name, type, new Location(file, line, column) );
+        this.linkPlans.add( plan );
         return plan.callSite();
     }
 

@@ -14,19 +14,21 @@ class LinkPlan {
     private RephractLinker linker;
     private List<Operation> operations;
 
-    private MutableCallSite callSite;
-    private Lookup lookup;
-    private String name;
-    private MethodType type;
+    private final MutableCallSite callSite;
+    private final Lookup lookup;
+    private final String name;
+    private final MethodType type;
+    private final Location location;
 
     List<Entry> links = new ArrayList<Entry>();
 
-    public LinkPlan(RephractLinker linker, MutableCallSite callSite, Lookup lookup, String name, MethodType type) throws NoSuchMethodException, IllegalAccessException {
+    public LinkPlan(RephractLinker linker, MutableCallSite callSite, Lookup lookup, String name, MethodType type, Location location) throws NoSuchMethodException, IllegalAccessException {
         this.linker = linker;
         this.callSite = callSite;
         this.lookup = lookup;
         this.name = name;
         this.type = type;
+        this.location = location;
         determineOperations();
         replan(null, null, null, null);
     }
@@ -117,7 +119,7 @@ class LinkPlan {
     }
 
     public void replan(Linker linker, Link link, MethodHandle guard, MethodHandle target) throws NoSuchMethodException, IllegalAccessException {
-        if (guard != null && target != null ) {
+        if (guard != null && target != null) {
             this.links.add(new Entry(guard, target));
         }
 
@@ -138,11 +140,27 @@ class LinkPlan {
             }
         }
 
+        if ( this.links.size() > 5 ) {
+            System.err.print("!! ");
+            this.dumpStatistics();
+            System.err.println( "Latest: " + link + " from " + linker );
+        }
+
         this.callSite.setTarget(current);
     }
 
     public String toString() {
         return "[Request: " + name + ": " + type + "]";
+    }
+
+    public void dumpStatistics() {
+        System.err.print(this.toString() + ": ");
+
+        if (this.location != null) {
+            System.err.print(location + ": ");
+        }
+
+        System.err.println(this.links.size());
     }
 
     public static class Entry {
