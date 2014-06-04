@@ -32,12 +32,6 @@ public class RephractLinker {
         return this.linkers;
     }
 
-    public void dumpStatistics() {
-        for (LinkPlan each : this.linkPlans) {
-            each.dumpStatistics();
-        }
-    }
-
     public MethodHandle getBootstrapMethodHandle() throws NoSuchMethodException, IllegalAccessException {
         Lookup lookup = MethodHandles.lookup();
         return Binder.from(CallSite.class, Lookup.class, String.class, MethodType.class)

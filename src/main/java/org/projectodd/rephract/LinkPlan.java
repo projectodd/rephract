@@ -7,6 +7,9 @@ import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.util.*;
 
+import static java.lang.invoke.MethodHandles.*;
+import static java.lang.invoke.MethodHandles.lookup;
+
 class LinkPlan {
 
     private static boolean debug;
@@ -15,9 +18,6 @@ class LinkPlan {
     static {
         String debug = System.getProperty("rephract.debug");
         String threshold = System.getProperty("rephract.debug.threshold");
-
-        System.err.println( "rephract.debug=" + debug );
-        System.err.println( "rephract.debug.threshold=" + threshold );
 
         if (debug != null || threshold != null) {
             LinkPlan.debug = true;
@@ -29,6 +29,16 @@ class LinkPlan {
         }
     }
 
+    private static MethodHandle LINK_INVOCATION;
+
+    static {
+        try {
+            LINK_INVOCATION = MethodHandles.lookup().findVirtual( LinkPlan.class, "linkInvocation", MethodType.methodType( Object.class, Object[].class ) );
+        } catch (Throwable t) {
+            t.printStackTrace();
+        }
+    }
+
     private RephractLinker linker;
     private List<Operation> operations;
 
@@ -37,6 +47,7 @@ class LinkPlan {
     private final String name;
     private final MethodType type;
     private final Location location;
+    private final MethodHandle relink;
 
     List<Entry> links = new ArrayList<>();
 
@@ -47,6 +58,12 @@ class LinkPlan {
         this.name = name;
         this.type = type;
         this.location = location;
+        this.relink = Binder.from(this.type)
+                .convert(this.type.erase())
+                .collect(0, Object[].class)
+                .convert(Object.class, Object[].class)
+                .insert(0, this)
+                .invoke( LINK_INVOCATION );
         determineOperations();
         replan(null, null, null, null);
     }
@@ -150,7 +167,6 @@ class LinkPlan {
 
         MethodHandle racing = checkForDuplicate(args);
         if (racing != null) {
-            System.out.println(this + " AVOIDED DUPE");
             return racing.invokeWithArguments(args);
         }
 
@@ -181,14 +197,7 @@ class LinkPlan {
             this.links.add(new Entry(linker, link, guard, target));
         }
 
-        MethodHandle relink = Binder.from(this.type)
-                .convert(this.type.erase())
-                .collect(0, Object[].class)
-                .convert(Object.class, Object[].class)
-                .insert(0, this)
-                .invokeVirtual(MethodHandles.lookup(), "linkInvocation");
-
-        MethodHandle current = relink;
+        MethodHandle current = this.relink;
 
         if (debug && this.links.size() >= debugThreshold) {
             StringBuffer buf = new StringBuffer();
@@ -196,13 +205,13 @@ class LinkPlan {
             for (int i = 0; i < this.links.size(); ++i) {
                 buf.append("  #").append(i).append(" == ").append(this.links.get(i).link).append("\n");
             }
-            System.out.println(buf);
+            System.err.println(buf);
         }
 
         for (int i = this.links.size() - 1; i >= 0; --i) {
             Entry eachLink = this.links.get(i);
             if (eachLink != null) {
-                current = MethodHandles.guardWithTest(possiblyDebugGuard(eachLink, i, eachLink.guard), eachLink.target, current);
+                current = guardWithTest(possiblyDebugGuard(eachLink, i, eachLink.guard), eachLink.target, current);
             }
         }
 
@@ -211,16 +220,6 @@ class LinkPlan {
 
     public String toString() {
         return "[Request: " + name + ": " + type + "] " + System.identityHashCode(this);
-    }
-
-    public void dumpStatistics() {
-        System.err.print(this.toString() + ": ");
-
-        if (this.location != null) {
-            System.err.print(location + ": ");
-        }
-
-        System.err.println(this.links.size());
     }
 
     public static class Entry {
@@ -280,12 +279,11 @@ class LinkPlan {
         buf.append(")");
         boolean result = (boolean) guard.invokeWithArguments(params);
         buf.append(" -> ").append(result);
-        if (plan.links.size() >= debugThreshold) {
-            System.out.println(buf.toString());
-        }
+        System.err.println(buf.toString());
         return result;
     }
 
+    /*
     public static Object debugTarget(LinkPlan plan, Entry entry, String type, Object[] params, Object result) {
         StringBuffer buf = new StringBuffer();
         buf.append("[");
@@ -304,8 +302,9 @@ class LinkPlan {
         }
         buf.append(")");
         buf.append(" -> ").append(result);
-        System.out.println(buf.toString());
+        System.err.println(buf.toString());
         return result;
     }
+    */
 
 }
