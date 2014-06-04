@@ -5,12 +5,30 @@ import org.projectodd.rephract.Invocation.Type;
 
 import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.StringTokenizer;
+import java.util.*;
 
 class LinkPlan {
+
+    private static boolean debug;
+    private static int debugThreshold;
+
+    static {
+        String debug = System.getProperty("rephract.debug");
+        String threshold = System.getProperty("rephract.debug.threshold");
+
+        System.err.println( "rephract.debug=" + debug );
+        System.err.println( "rephract.debug.threshold=" + threshold );
+
+        if (debug != null || threshold != null) {
+            LinkPlan.debug = true;
+            if (threshold != null) {
+                LinkPlan.debugThreshold = Integer.parseInt(threshold);
+            } else {
+                LinkPlan.debugThreshold = 1;
+            }
+        }
+    }
+
     private RephractLinker linker;
     private List<Operation> operations;
 
@@ -20,7 +38,7 @@ class LinkPlan {
     private final MethodType type;
     private final Location location;
 
-    List<Entry> links = new ArrayList<Entry>();
+    List<Entry> links = new ArrayList<>();
 
     public LinkPlan(RephractLinker linker, MutableCallSite callSite, Lookup lookup, String name, MethodType type, Location location) throws NoSuchMethodException, IllegalAccessException {
         this.linker = linker;
@@ -118,39 +136,81 @@ class LinkPlan {
         return this.lookup;
     }
 
+    public MethodHandle checkForDuplicate(Object[] args) throws Throwable {
+        for (Entry each : this.links) {
+            if ((boolean) each.guard.invokeWithArguments(args)) {
+                return each.target;
+            }
+        }
+
+        return null;
+    }
+
+    public synchronized Object linkInvocation(Object[] args) throws Throwable {
+
+        MethodHandle racing = checkForDuplicate(args);
+        if (racing != null) {
+            System.out.println(this + " AVOIDED DUPE");
+            return racing.invokeWithArguments(args);
+        }
+
+        List<Operation> operations = getOperations();
+
+        Link link = null;
+        Invocation invocation = null;
+        Object receiver = (args.length >= 1 ? args[0] : null);
+        for (Operation each : operations) {
+            for (Linker linker : this.linker.linkers()) {
+                invocation = new Invocation(each.type(), this.type, receiver, args);
+                link = linker.link(invocation);
+                if (link != null) {
+                    MethodHandle target = link.test(args);
+                    if (target != null) {
+                        replan(linker, link, link.guard(), target);
+                        return target.invokeWithArguments(args);
+                    }
+                }
+            }
+        }
+
+        throw new NoSuchMethodError(name() + ": " + Arrays.asList(args));
+    }
+
     public void replan(Linker linker, Link link, MethodHandle guard, MethodHandle target) throws NoSuchMethodException, IllegalAccessException {
         if (guard != null && target != null) {
-            this.links.add(new Entry(guard, target));
+            this.links.add(new Entry(linker, link, guard, target));
         }
 
         MethodHandle relink = Binder.from(this.type)
                 .convert(this.type.erase())
                 .collect(0, Object[].class)
                 .convert(Object.class, Object[].class)
-                .insert(0, this.linker)
-                .insert(1, this)
+                .insert(0, this)
                 .invokeVirtual(MethodHandles.lookup(), "linkInvocation");
 
         MethodHandle current = relink;
 
+        if (debug && this.links.size() >= debugThreshold) {
+            StringBuffer buf = new StringBuffer();
+            buf.append("[" + Thread.currentThread().getName() + "] :: LARGE :: " + this + "\n");
+            for (int i = 0; i < this.links.size(); ++i) {
+                buf.append("  #").append(i).append(" == ").append(this.links.get(i).link).append("\n");
+            }
+            System.out.println(buf);
+        }
+
         for (int i = this.links.size() - 1; i >= 0; --i) {
             Entry eachLink = this.links.get(i);
             if (eachLink != null) {
-                current = MethodHandles.guardWithTest(eachLink.guard, eachLink.target, current);
+                current = MethodHandles.guardWithTest(possiblyDebugGuard(eachLink, i, eachLink.guard), eachLink.target, current);
             }
-        }
-
-        if ( this.links.size() > 5 ) {
-            System.err.print("!! ");
-            this.dumpStatistics();
-            System.err.println( "Latest: " + link + " from " + linker );
         }
 
         this.callSite.setTarget(current);
     }
 
     public String toString() {
-        return "[Request: " + name + ": " + type + "]";
+        return "[Request: " + name + ": " + type + "] " + System.identityHashCode(this);
     }
 
     public void dumpStatistics() {
@@ -164,13 +224,88 @@ class LinkPlan {
     }
 
     public static class Entry {
+        public final Linker linker;
+        public final Link link;
         public final MethodHandle guard;
         public final MethodHandle target;
 
-        public Entry(MethodHandle guard, MethodHandle target) {
+        public Entry(Linker linker, Link link, MethodHandle guard, MethodHandle target) {
+            this.linker = linker;
+            this.link = link;
             this.guard = guard;
             this.target = target;
         }
+
+        public String toString() {
+            return "[Entry: link=" + this.link + "; linker=" + this.linker + "; target=" + this.target + "; guard=" + this.guard + "]";
+
+        }
+    }
+
+    public MethodHandle possiblyDebugGuard(Entry entry, int position, MethodHandle input) throws NoSuchMethodException, IllegalAccessException {
+        if (!debug) {
+            return input;
+        }
+
+        MethodHandle debugMh = MethodHandles.lookup()
+                .findStatic(LinkPlan.class, "debugGuard", MethodType.methodType(boolean.class, LinkPlan.class, LinkPlan.Entry.class, int.class, MethodHandle.class, Object[].class));
+
+        debugMh = Binder.from(input.type())
+                .convert(input.type().erase())
+                .collect(0, Object[].class)
+                .insert(0, input)
+                .insert(0, position)
+                .insert(0, entry)
+                .insert(0, this)
+                .invoke(debugMh);
+        return debugMh;
+    }
+
+    public static boolean debugGuard(LinkPlan plan, Entry entry, int position, MethodHandle guard, Object[] params) throws Throwable {
+        StringBuffer buf = new StringBuffer();
+        buf.append("[");
+        buf.append(Thread.currentThread().getName());
+        buf.append("] ");
+        buf.append(plan);
+        buf.append(" #").append(position).append(" ");
+        buf.append("<guard> ");
+        buf.append(entry.link);
+        buf.append(" (");
+        for (int i = 0; i < params.length; ++i) {
+            buf.append(params[i]);
+            if (i < params.length) {
+                buf.append(", ");
+            }
+        }
+        buf.append(")");
+        boolean result = (boolean) guard.invokeWithArguments(params);
+        buf.append(" -> ").append(result);
+        if (plan.links.size() >= debugThreshold) {
+            System.out.println(buf.toString());
+        }
+        return result;
+    }
+
+    public static Object debugTarget(LinkPlan plan, Entry entry, String type, Object[] params, Object result) {
+        StringBuffer buf = new StringBuffer();
+        buf.append("[");
+        buf.append(Thread.currentThread().getName());
+        buf.append("] ");
+        buf.append("<guard> ");
+        buf.append(plan);
+        buf.append(" ## ");
+        buf.append(entry.link);
+        buf.append("(");
+        for (int i = 0; i < params.length; ++i) {
+            buf.append(params[i]);
+            if (i < params.length) {
+                buf.append(", ");
+            }
+        }
+        buf.append(")");
+        buf.append(" -> ").append(result);
+        System.out.println(buf.toString());
+        return result;
     }
 
 }

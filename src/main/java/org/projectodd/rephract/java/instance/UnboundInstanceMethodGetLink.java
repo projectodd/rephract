@@ -62,4 +62,8 @@ public class UnboundInstanceMethodGetLink extends AbstractResolvingLink implemen
                 .insert( 0, this.method )
                 .invoke(MethodHandles.identity(DynamicMethod.class)).target();
     }
+
+    public String toString() {
+        return "[UnboundInstanceMethodGetLink: " + this.method + "]";
+    }
 }

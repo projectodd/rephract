@@ -5,10 +5,12 @@ import java.util.Arrays;
 
 public class InvocationPlan {
 
+    private AbstractDynamicMember member;
     private MethodHandle methodHandle;
     private MethodHandle[] filters;
 
-    public InvocationPlan(MethodHandle methodHandle, MethodHandle[] filters) {
+    public InvocationPlan(AbstractDynamicMember member, MethodHandle methodHandle, MethodHandle[] filters) {
+        this. member= member;
         this.methodHandle = methodHandle;
         this.filters = filters;
     }
@@ -44,7 +46,7 @@ public class InvocationPlan {
     }
 
     public String toString() {
-        return "[InvocationPlan: " + methodHandle + "; filters=" + Arrays.asList(this.filters) + "]";
+        return "[InvocationPlan: " + member + " >> " + methodHandle + "; filters=" + Arrays.asList(this.filters) + "]";
     }
 
 }

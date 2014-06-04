@@ -28,8 +28,12 @@ public class RephractLinker {
         this.linkers.add(strategy);
     }
 
+    List<Linker> linkers() {
+        return this.linkers;
+    }
+
     public void dumpStatistics() {
-        for ( LinkPlan each : this.linkPlans ) {
+        for (LinkPlan each : this.linkPlans) {
             each.dumpStatistics();
         }
     }
@@ -49,8 +53,8 @@ public class RephractLinker {
 
     public CallSite bootstrap(Lookup lookup, String name, MethodType type, String file, int line, int column) throws Throwable {
         MutableCallSite callSite = new MutableCallSite(type);
-        LinkPlan plan = new LinkPlan(this, callSite, lookup, name, type, new Location(file, line, column) );
-        this.linkPlans.add( plan );
+        LinkPlan plan = new LinkPlan(this, callSite, lookup, name, type, new Location(file, line, column));
+        this.linkPlans.add(plan);
         return plan.callSite();
     }
 
@@ -62,28 +66,6 @@ public class RephractLinker {
         return bootstrap(name, MethodType.methodType(returnType, paramTypes));
     }
 
-    public Object linkInvocation(LinkPlan plan, Object[] args) throws Throwable {
 
-        List<Operation> operations = plan.getOperations();
-
-        Link link = null;
-        Invocation invocation = null;
-        Object receiver = (args.length >= 1 ? args[0] : null);
-        for (Operation each : operations) {
-            for (Linker linker : this.linkers) {
-                invocation = new Invocation(each.type(), plan.methodType(), receiver, args);
-                link = linker.link(invocation);
-                if (link != null) {
-                    MethodHandle target = link.test( args );
-                    if (target != null) {
-                        plan.replan(linker, link, link.guard(), target);
-                        return target.invokeWithArguments(args);
-                    }
-                }
-            }
-        }
-
-        throw new NoSuchMethodError(plan.name() + ": " + Arrays.asList(args));
-    }
 
 }

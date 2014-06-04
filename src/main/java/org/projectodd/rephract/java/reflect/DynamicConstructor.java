@@ -51,7 +51,7 @@ public class DynamicConstructor extends AbstractDynamicMember {
             for (int j = 0; j < paramTypes.length; ++j) {
                 filters[j] = matrix.getFilter(paramTypes[j], args[j]);
             }
-            return new InvocationPlan(matchedMethod, filters);
+            return new InvocationPlan(this, matchedMethod, filters);
 
         }
         return null;

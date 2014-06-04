@@ -37,7 +37,7 @@ public class BoundDynamicMethod extends DynamicMethod {
 
         try {
             filters[0] = selfFilter( selfType );
-            InvocationPlan plan = new InvocationPlan(unboundPlan.getMethodHandle(), filters);
+            InvocationPlan plan = new InvocationPlan(this, unboundPlan.getMethodHandle(), filters);
             return plan;
         } catch (NoSuchMethodException | IllegalAccessException e) {
             e.printStackTrace();

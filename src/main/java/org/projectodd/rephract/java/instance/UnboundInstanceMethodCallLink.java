@@ -74,4 +74,9 @@ public class UnboundInstanceMethodCallLink extends SmartLink implements Guard {
                 .filter(1, this.plan.getFilters() )
                 .invoke(this.plan.getMethodHandle()).target();
     }
+
+    public String toString() {
+        return "[UnboundInstanceMethodCallLink: " + this.plan + "]";
+
+    }
 }
