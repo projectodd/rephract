@@ -22,17 +22,17 @@ public class MapLikePropertyGetLink extends AbstractResolvingLink implements Gua
     private InvocationPlan plan;
 
     public MapLikePropertyGetLink(LinkBuilder builder, ResolverManager resolverManager) throws Exception {
-        super( builder, resolverManager );
+        super(builder, resolverManager);
         this.builder = this.builder.guardWith(this);
     }
 
     public boolean guard(Object receiver, String propertyName) {
-        if ( propertyName.equals( "get" ) || propertyName.equals( "put" ) ) {
+        if (propertyName.equals("get") || propertyName.equals("put")) {
             return false;
         }
 
         Resolver resolver = resolve(receiver.getClass());
-        DynamicMethod method = resolver.getInstanceResolver().getMethod( "get" );
+        DynamicMethod method = resolver.getInstanceResolver().getMethod("get");
 
         if (method == null) {
             return false;
@@ -40,8 +40,12 @@ public class MapLikePropertyGetLink extends AbstractResolvingLink implements Gua
 
         InvocationPlan plan = method.findMethodInvoationPlan(propertyName);
 
-        if ( this.plan != null ) {
-            if ( ! this.plan.equals( plan ) ) {
+        if (plan == null) {
+            return false;
+        }
+
+        if (this.plan != null) {
+            if (!this.plan.equals(plan)) {
                 return false;
             }
         }
@@ -64,7 +68,7 @@ public class MapLikePropertyGetLink extends AbstractResolvingLink implements Gua
     public MethodHandle target() throws Exception {
         MethodHandle methodHandle = this.plan.getMethodHandle();
         return this.builder
-                .filter( 1, this.plan.getFilters() )
+                .filter(1, this.plan.getFilters())
                 .convert(methodHandle.type().returnType(), methodHandle.type().parameterArray())
                 .invoke(methodHandle)
                 .target();
