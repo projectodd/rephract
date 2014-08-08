@@ -5,7 +5,7 @@
 
     <groupId>org.projectodd.rephract</groupId>
     <artifactId>rephract</artifactId>
-    <version>2.0.0.beta1-SNAPSHOT</version>
+    <version>2.0.0</version>
     <name>rephract</name>
 
     <properties>
@@ -35,7 +35,7 @@
         <connection>scm:git:git@github.com:projectodd/rephract.git</connection>
         <developerConnection>scm:git:git@github.com:projectodd/rephract.git</developerConnection>
         <url>git@github.com:projectodd/rephract.git</url>
-        <tag>HEAD</tag>
+        <tag>v2.0.0</tag>
     </scm>
 
     <licenses>
