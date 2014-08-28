@@ -64,6 +64,15 @@ public class ClassResolver extends AbstractResolver {
         for (int i = 0; i < interfaces.length; ++i) {
             analyze(interfaces[i], false);
         }
+
+        Class<?>[] innerClasses = cls.getDeclaredClasses();
+
+        for (int i = 0; i < innerClasses.length; ++i) {
+            int modifiers = innerClasses[i].getModifiers();
+            if ( Modifier.isPublic( modifiers ) && Modifier.isStatic( modifiers ) ) {
+                this.propertyReaders.put( innerClasses[i].getSimpleName(), MethodHandles.constant( Class.class, innerClasses[i] ) );
+            }
+        }
     }
 
     public DynamicConstructor getConstructor() {

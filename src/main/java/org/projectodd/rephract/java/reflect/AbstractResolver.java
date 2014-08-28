@@ -14,9 +14,9 @@ public class AbstractResolver {
     private CoercionMatrix coercionMatrix;
     private Class<?> targetClass;
 
-    private Map<String, MethodHandle> propertyReaders = new HashMap<>();
-    private Map<String, DynamicMethod> propertyWriters = new HashMap<>();
-    private Map<String, DynamicMethod> methods = new HashMap<>();
+    protected Map<String, MethodHandle> propertyReaders = new HashMap<>();
+    protected Map<String, DynamicMethod> propertyWriters = new HashMap<>();
+    protected Map<String, DynamicMethod> methods = new HashMap<>();
 
     public AbstractResolver(CoercionMatrix coercionMatrix, Class<?> targetClass) {
         this.coercionMatrix = coercionMatrix;
