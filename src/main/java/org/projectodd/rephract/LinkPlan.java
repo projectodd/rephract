@@ -33,7 +33,7 @@ class LinkPlan {
 
     static {
         try {
-            LINK_INVOCATION = MethodHandles.lookup().findVirtual( LinkPlan.class, "linkInvocation", MethodType.methodType( Object.class, Object[].class ) );
+            LINK_INVOCATION = MethodHandles.lookup().findVirtual(LinkPlan.class, "linkInvocation", MethodType.methodType(Object.class, Object[].class));
         } catch (Throwable t) {
             t.printStackTrace();
         }
@@ -63,7 +63,7 @@ class LinkPlan {
                 .collect(0, Object[].class)
                 .convert(Object.class, Object[].class)
                 .insert(0, this)
-                .invoke( LINK_INVOCATION );
+                .invoke(LINK_INVOCATION);
         determineOperations();
         replan(null, null, null, null);
     }

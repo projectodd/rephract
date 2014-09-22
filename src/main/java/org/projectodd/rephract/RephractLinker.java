@@ -1,19 +1,16 @@
 package org.projectodd.rephract;
 
 import com.headius.invokebinder.Binder;
-import org.projectodd.rephract.guards.Guards;
 
 import java.lang.invoke.*;
 import java.lang.invoke.MethodHandles.Lookup;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class RephractLinker {
 
     private List<Linker> linkers = new ArrayList<>();
     private LinkLogger logger;
-    private List<LinkPlan> linkPlans = new ArrayList<>();
 
     public RephractLinker() {
         this(new NullLinkLogger());
@@ -48,7 +45,6 @@ public class RephractLinker {
     public CallSite bootstrap(Lookup lookup, String name, MethodType type, String file, int line, int column) throws Throwable {
         MutableCallSite callSite = new MutableCallSite(type);
         LinkPlan plan = new LinkPlan(this, callSite, lookup, name, type, new Location(file, line, column));
-        this.linkPlans.add(plan);
         return plan.callSite();
     }
 
